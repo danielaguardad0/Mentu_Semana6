@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -8,7 +9,7 @@ class OnboardingScreen extends StatelessWidget {
     const primaryColor = Colors.blue;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFD2EBE8), // Fondo Azul muy claro
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -18,23 +19,37 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 30),
 
-                // 🔹 Logo con animación sutil al aparecer
+                // 🔹 Logo
                 Hero(
                   tag: 'mentu_logo',
                   child: Image.asset(
-                    'assets/images/mentu_logo2.png',
+                    'assets/images/mentu_logo3.png',
                     height: 260,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.school,
-                        size: 120,
-                        color: primaryColor),
+                      Icons.school,
+                      size: 120,
+                      color: primaryColor,
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 25),
 
-                // 🔹 Botón Login con animación al presionar
+                // 🔹 Eslógan M O V I D O: Ahora justo después del logo
+                Text(
+                  "Tu camino hacia el éxito académico 💡",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.lobster(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+
+                const SizedBox(height: 50), // Espacio entre eslogan y botones
+
+                // 🔹 Botón Login
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
@@ -45,13 +60,12 @@ class OnboardingScreen extends StatelessWidget {
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 6,
-                      // ignore: deprecated_member_use
                       shadowColor: primaryColor.withOpacity(0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      textStyle: const TextStyle(
-                        fontSize: 18,
+                      textStyle: GoogleFonts.lobster(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -61,7 +75,7 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // 🔹 Botón Sign Up con hover animado
+                // 🔹 Botón Sign Up
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: AnimatedContainer(
@@ -76,8 +90,8 @@ class OnboardingScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        textStyle: const TextStyle(
-                          fontSize: 18,
+                        textStyle: GoogleFonts.lobster(
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -86,18 +100,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 30),
-
-                // 🔹 Texto decorativo abajo
-                const Text(
-                  "Tu camino hacia el éxito académico, ¡organizado y fácil! 📚",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
+                const SizedBox(height: 40),
               ],
             ),
           ),

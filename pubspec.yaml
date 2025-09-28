@@ -31,8 +31,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # ------------------------------------------------------------------
-  # SECCIÓN CORREGIDA: Registro de la carpeta de assets/images
-  # ------------------------------------------------------------------
   assets:
     - assets/images/
