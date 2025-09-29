@@ -7,17 +7,20 @@ const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 const Color starColor = Colors.amber;
 
+// MODIFICACIÓN 1: Agregar profileImageUrl al modelo Tutor
 class Tutor {
   final String name;
   final String subject;
   final double rating;
   final int reviews;
+  final String? profileImageUrl; // NUEVA PROPIEDAD
 
   Tutor({
     required this.name,
     required this.subject,
     required this.rating,
     this.reviews = 0,
+    this.profileImageUrl, // AGREGAR AL CONSTRUCTOR
   });
 }
 
@@ -40,19 +43,56 @@ class _TutoringScreenState extends State<TutoringScreen> {
     "Art"
   ];
 
+  // MODIFICACIÓN 2: Asignar URLs de imagen (usando picsum.photos para mayor compatibilidad)
   final List<Tutor> allTopTutors = [
     Tutor(
-        name: "Mary Smith", subject: "Mathematics", rating: 4.9, reviews: 150),
-    Tutor(name: "John Doe", subject: "Science", rating: 4.7, reviews: 92),
-    Tutor(name: "Elisa R.", subject: "History", rating: 4.8, reviews: 55),
-    Tutor(name: "Ana P.", subject: "Physics", rating: 4.5, reviews: 70),
-    Tutor(name: "Carlos M.", subject: "Calculus", rating: 5.0, reviews: 200),
+        name: "Mary Smith",
+        subject: "Mathematics",
+        rating: 4.9,
+        reviews: 150,
+        profileImageUrl: "https://picsum.photos/id/11/200/200"),
+    Tutor(
+        name: "John Doe",
+        subject: "Science",
+        rating: 4.7,
+        reviews: 92,
+        profileImageUrl: "https://picsum.photos/id/20/200/200"),
+    Tutor(
+        name: "Elisa R.",
+        subject: "History",
+        rating: 4.8,
+        reviews: 55,
+        profileImageUrl: "https://picsum.photos/id/26/200/200"),
+    Tutor(
+        name: "Ana P.",
+        subject: "Physics",
+        rating: 4.5,
+        reviews: 70,
+        profileImageUrl: "https://picsum.photos/id/35/200/200"),
+    Tutor(
+        name: "Carlos M.",
+        subject: "Calculus",
+        rating: 5.0,
+        reviews: 200,
+        profileImageUrl: "https://picsum.photos/id/40/200/200"),
   ];
 
   final List<Tutor> bookAgainTutors = [
-    Tutor(name: "Robert J.", subject: "Physics", rating: 4.5),
-    Tutor(name: "Laura K.", subject: "English", rating: 5.0),
-    Tutor(name: "Peter P.", subject: "Chemistry", rating: 4.6),
+    Tutor(
+        name: "Robert J.",
+        subject: "Physics",
+        rating: 4.5,
+        profileImageUrl: "https://picsum.photos/id/51/200/200"),
+    Tutor(
+        name: "Laura K.",
+        subject: "English",
+        rating: 5.0,
+        profileImageUrl: "https://picsum.photos/id/55/200/200"),
+    Tutor(
+        name: "Peter P.",
+        subject: "Chemistry",
+        rating: 4.6,
+        profileImageUrl: "https://picsum.photos/id/60/200/200"),
   ];
 
   List<Tutor> get _filteredTopTutors {
@@ -96,7 +136,8 @@ class _TutoringScreenState extends State<TutoringScreen> {
           margin: const EdgeInsets.only(bottom: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: backgroundColor.withOpacity(0.5),
+              // CORRECCIÓN: Reemplazo de withOpacity(0.5) por withAlpha(127)
+              color: backgroundColor.withAlpha(127),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
             ),
@@ -141,7 +182,8 @@ class _TutoringScreenState extends State<TutoringScreen> {
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  // CORRECCIÓN: Reemplazo de withOpacity(0.1) por withAlpha(25)
+                  color: Colors.grey.withAlpha(25),
                   spreadRadius: 1,
                   blurRadius: 3,
                   offset: const Offset(0, 1),
@@ -245,7 +287,8 @@ class _TutoringScreenState extends State<TutoringScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    // CORRECCIÓN: Reemplazo de withOpacity(0.2) por withAlpha(51)
+                    color: Colors.black.withAlpha(51),
                     spreadRadius: 0,
                     blurRadius: 10,
                     offset: const Offset(0, 5),
@@ -465,7 +508,8 @@ class _CategoryCard extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade300, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
+              // CORRECCIÓN: Reemplazo de withOpacity(0.05) por withAlpha(13)
+              color: Colors.grey.withAlpha(13),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 3),
@@ -479,7 +523,8 @@ class _CategoryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                // CORRECCIÓN: Reemplazo de withOpacity(0.1) por withAlpha(25)
+                color: primaryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text("Top Rated",
@@ -519,11 +564,18 @@ class _TopTutorItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            // Foto del Tutor
-            const CircleAvatar(
+            // MODIFICACIÓN 3A: Implementación de la imagen de perfil
+            CircleAvatar(
               radius: 28,
-              backgroundColor: Color(0xFFE0F2F1),
-              child: Icon(Icons.person, color: Color(0xFF00796B)),
+              backgroundColor: Colors.grey.shade300,
+              // Usa NetworkImage si hay una URL, sino es nulo.
+              backgroundImage: tutor.profileImageUrl != null
+                  ? NetworkImage(tutor.profileImageUrl!)
+                  : null,
+              // Muestra el icono de persona si no hay imagen (backgroundImage es nulo)
+              child: tutor.profileImageUrl == null
+                  ? const Icon(Icons.person, color: primaryColor)
+                  : null,
             ),
             const SizedBox(width: 15),
 
@@ -578,23 +630,34 @@ class _BookAgainCard extends StatelessWidget {
         width: 120,
         margin: const EdgeInsets.only(right: 15),
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.5),
+          // CORRECCIÓN: Reemplazo de withOpacity(0.5) por withAlpha(127)
+          color: backgroundColor.withAlpha(127),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // MODIFICACIÓN 3B: Implementación de la imagen en la tarjeta
             Container(
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
+                // Si hay URL, usa la imagen de red.
+                image: tutor.profileImageUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(tutor.profileImageUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: Colors.grey.shade300,
               ),
-              child: Center(
-                child:
-                    Icon(Icons.photo_camera_back, color: Colors.grey.shade600),
-              ),
+              child: tutor.profileImageUrl == null
+                  ? Center(
+                      child: Icon(Icons.person,
+                          color: Colors.grey.shade600, size: 40),
+                    )
+                  : null,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
