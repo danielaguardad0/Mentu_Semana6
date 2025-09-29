@@ -231,9 +231,7 @@ class _TutoringScreenState extends State<TutoringScreen> {
               ),
             )
           else
-            ..._filteredTopTutors
-                .map((tutor) => _TopTutorItem(tutor: tutor))
-                .toList(),
+            ..._filteredTopTutors.map((tutor) => _TopTutorItem(tutor: tutor)),
           const SizedBox(height: 25),
           InkWell(
             onTap: () {
@@ -388,7 +386,7 @@ class _TutoringScreenState extends State<TutoringScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          "Tutored",
+          "Tutors",
           style: GoogleFonts.lobster(fontSize: 28, color: Colors.black87),
         ),
       ),

@@ -116,7 +116,7 @@ class LoginScreen extends StatelessWidget {
                 // Enlace para ir a Crear Cuenta (similar al OutlinedButton, pero más simple)
                 TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/signup'),
-                  child: Text(
+                  child: const Text(
                     '¿Aún no tienes cuenta? Regístrate',
                     style: TextStyle(
                         color: Colors.black54,

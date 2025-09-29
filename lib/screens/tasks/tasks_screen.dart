@@ -201,7 +201,7 @@ class _TasksScreenState extends State<TasksScreen>
             indicatorColor: Colors.transparent, // elimina línea
             indicatorWeight: 0, // asegura que no se dibuje
             dividerColor: Colors.transparent, // 🔥 elimina divisor por defecto
-            overlayColor: MaterialStateProperty.all(
+            overlayColor: WidgetStateProperty.all(
                 Colors.transparent), // 🔥 elimina resaltado
             splashFactory: NoSplash.splashFactory, // 🔥 sin efecto splash
             labelColor: Colors.white,
