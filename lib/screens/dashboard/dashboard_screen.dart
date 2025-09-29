@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:fl_chart/fl_chart.dart'; // Necesario para el BarChart
+import 'package:fl_chart/fl_chart.dart';
 
 const Color primaryColor = Colors.blue;
-const Color accentColor = Color(0xFF4CAF50); // Verde para progreso
-const Color appBackgroundColor = Color(0xFFD2EBE8); // Fondo claro (renombrado)
+const Color accentColor = Color(0xFF4CAF50);
+const Color appBackgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 
 class DashboardScreen extends StatefulWidget {

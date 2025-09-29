@@ -9,7 +9,7 @@ class OnboardingScreen extends StatelessWidget {
     const primaryColor = Colors.blue;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFD2EBE8), // Fondo Azul muy claro
+      backgroundColor: const Color(0xFFD2EBE8),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -36,7 +36,7 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                // 🔹 Eslógan M O V I D O: Ahora justo después del logo
+                // 🔹 Eslogan
                 Text(
                   "Tu camino hacia el éxito académico 💡",
                   textAlign: TextAlign.center,
@@ -47,7 +47,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 50), // Espacio entre eslogan y botones
+                const SizedBox(height: 50),
 
                 // 🔹 Botón Login
                 AnimatedContainer(
