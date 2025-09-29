@@ -23,6 +23,9 @@ dependencies:
   table_calendar: ^3.0.9
   fl_chart: ^1.1.1
 
+  # Navegación
+  go_router: ^14.2.7
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

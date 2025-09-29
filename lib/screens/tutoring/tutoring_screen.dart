@@ -1,282 +1,130 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
-// --- T E M A / C O L O R E S ---
-const Color primaryColor = Color(0xFF1E88E5); // Azul vibrante
+const Color primaryColor = Colors.blue;
+const Color starColor = Colors.amber;
 
+// Modelo Tutor
 class Tutor {
   final String name;
   final String subject;
   final double rating;
   final int reviews;
+  final String? profileImageUrl;
 
   Tutor({
     required this.name,
     required this.subject,
     required this.rating,
     this.reviews = 0,
+    this.profileImageUrl,
   });
 }
 
 class TutoringScreen extends StatefulWidget {
   const TutoringScreen({super.key});
 
-  final List<Map<String, String>> featuredTutors = const [
-    {
-      "name": "Sarah M.",
-      "subject": "Math Tutor",
-      "reviews": "4.9 (120 reviews)",
-      "image": "assets/sarah.png",
-    },
-    {
-      "name": "David L.",
-      "subject": "Science Tutor",
-      "reviews": "4.8 (85 reviews)",
-      "image": "assets/david.png",
-    },
-  ];
-
-  final List<Map<String, String>> allTutors = const [
-    {
-      "name": "Sarah M.",
-      "subject": "Math Tutor",
-      "rating": "4.9",
-      "image": "assets/sarah_icon.png",
-    },
-    {
-      "name": "David L.",
-      "subject": "Science Tutor",
-      "rating": "4.8",
-      "image": "assets/david_icon.png",
-    },
-  ];
-
-  Widget _buildSubjectChip(
-      BuildContext context, String label, bool isSelected) {
-    final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: Chip(
-        label: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? colors.onPrimary : colors.onSurface,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-        backgroundColor: isSelected ? primaryColor : colors.surfaceVariant,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      ),
-    );
-  }
-
-  Widget _buildFeaturedTutorCard(
-      BuildContext context, Map<String, String> tutor) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 15),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colors.shadow.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 140,
-            decoration: BoxDecoration(
-              color: colors.secondaryContainer,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            child: Center(
-              child: Text(
-                "Image Placeholder",
-                style: TextStyle(color: colors.onSecondaryContainer),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tutor["name"]!,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Text(
-                  tutor["subject"]!,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      tutor["reviews"]!,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAllTutorItem(BuildContext context, Map<String, String> tutor) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: colors.shadow.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 28,
-          backgroundColor: colors.secondaryContainer,
-          child: Icon(Icons.person, color: colors.onSecondaryContainer),
-        ),
-        title: Text(
-          tutor["name"]!,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              tutor["subject"]!,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            Row(
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  tutor["rating"]!,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ],
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios,
-            size: 16, color: primaryColor),
-        onTap: () {},
-      ),
-    );
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+  State<TutoringScreen> createState() => _TutoringScreenState();
+}
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          "Find a Tutor",
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        centerTitle: false,
-        backgroundColor: colors.background,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+class _TutoringScreenState extends State<TutoringScreen> {
+  int _selectedTab = 0;
+  String _searchText = "";
+
+  final List<String> categories = const [
+    "Science",
+    "Math",
+    "Languages",
+    "History",
+    "Art"
+  ];
+
+  final List<Tutor> allTopTutors = [
+    Tutor(
+        name: "Mary Smith",
+        subject: "Mathematics",
+        rating: 4.9,
+        reviews: 150,
+        profileImageUrl: "https://picsum.photos/id/11/200/200"),
+    Tutor(
+        name: "John Doe",
+        subject: "Science",
+        rating: 4.7,
+        reviews: 92,
+        profileImageUrl: "https://picsum.photos/id/20/200/200"),
+    Tutor(
+        name: "Elisa R.",
+        subject: "History",
+        rating: 4.8,
+        reviews: 55,
+        profileImageUrl: "https://picsum.photos/id/26/200/200"),
+    Tutor(
+        name: "Ana P.",
+        subject: "Physics",
+        rating: 4.5,
+        reviews: 70,
+        profileImageUrl: "https://picsum.photos/id/35/200/200"),
+    Tutor(
+        name: "Carlos M.",
+        subject: "Calculus",
+        rating: 5.0,
+        reviews: 200,
+        profileImageUrl: "https://picsum.photos/id/40/200/200"),
+  ];
+
+  final List<Tutor> bookAgainTutors = [
+    Tutor(
+        name: "Robert J.",
+        subject: "Physics",
+        rating: 4.5,
+        profileImageUrl: "https://picsum.photos/id/51/200/200"),
+    Tutor(
+        name: "Laura K.",
+        subject: "English",
+        rating: 5.0,
+        profileImageUrl: "https://picsum.photos/id/55/200/200"),
+    Tutor(
+        name: "Peter P.",
+        subject: "Chemistry",
+        rating: 4.6,
+        profileImageUrl: "https://picsum.photos/id/60/200/200"),
+  ];
+
+  List<Tutor> get _filteredTopTutors {
+    if (_searchText.isEmpty) {
+      return allTopTutors;
+    }
+    return allTopTutors
+        .where((tutor) =>
+            tutor.name.toLowerCase().contains(_searchText.toLowerCase()) ||
+            tutor.subject.toLowerCase().contains(_searchText.toLowerCase()))
+        .toList();
+  }
+
+  // ==== Header ====
+  Widget _buildHeader(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        // Tabs
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: colors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: "Search by subject or tutor name",
-                    hintStyle: TextStyle(color: colors.onSurfaceVariant),
-                    prefixIcon: Icon(Icons.search,
-                        color: colors.onSurfaceVariant),
-                    border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Row(
-                  children: [
-                    _buildSubjectChip(context, "All", true),
-                    _buildSubjectChip(context, "Math", false),
-                    _buildSubjectChip(context, "Science", false),
-                    _buildSubjectChip(context, "English", false),
-                    _buildSubjectChip(context, "History", false),
-                    _buildSubjectChip(context, "Physics", false),
-                  ],
-                ),
-              ),
-              Text("Featured Tutors",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 15),
-              SizedBox(
-                height: 250,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    ...featuredTutors
-                        .map((tutor) => _buildFeaturedTutorCard(context, tutor)),
-                    const SizedBox(width: 15),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text("All Tutors",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 15),
-              Column(
-                children: allTutors
-                    .map((tutor) => _buildAllTutorItem(context, tutor))
-                    .toList(),
-              ),
-              const SizedBox(height: 20),
+              Expanded(
+                  child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = 0),
+                      child: _buildHeaderTab(
+                          context, "Categories", _selectedTab == 0))),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: GestureDetector(
+                      onTap: () => setState(() => _selectedTab = 1),
+                      child: _buildHeaderTab(
+                          context, "Book Again", _selectedTab == 1))),
             ],
           ),
         ),
@@ -287,9 +135,9 @@ class TutoringScreen extends StatefulWidget {
           margin: const EdgeInsets.only(bottom: 20),
           child: Container(
             decoration: BoxDecoration(
-              color: backgroundColor.withOpacity(0.5),
+              color: cs.surfaceVariant.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: cs.outline.withOpacity(0.3)),
             ),
             child: TextField(
               onChanged: (value) {
@@ -297,14 +145,15 @@ class TutoringScreen extends StatefulWidget {
                   _searchText = value;
                 });
               },
+              style: GoogleFonts.inter(color: cs.onSurface),
               decoration: InputDecoration(
                 hintText: "Search for tutors or topics",
-                hintStyle: GoogleFonts.inter(color: Colors.black54),
-                prefixIcon: const Icon(Icons.search, color: Colors.black54),
+                hintStyle: GoogleFonts.inter(color: cs.onSurfaceVariant),
+                prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant),
                 suffixIcon: Container(
                   margin: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: primaryColor,
+                    color: cs.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.search_rounded,
@@ -320,39 +169,32 @@ class TutoringScreen extends StatefulWidget {
     );
   }
 
-  // Widget para barra superior
   Widget _buildHeaderTab(BuildContext context, String title, bool isSelected) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: isSelected ? cardBackgroundColor : Colors.transparent,
+        color: isSelected ? cs.surface : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-            color: isSelected ? Colors.grey.shade300 : Colors.transparent),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, 1),
-                )
-              ]
-            : null,
+            color: isSelected ? cs.outlineVariant : Colors.transparent),
       ),
       child: Center(
         child: Text(
           title,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.black87 : Colors.grey.shade600,
+            color: isSelected ? cs.onSurface : cs.onSurfaceVariant,
           ),
         ),
       ),
     );
   }
 
+  // ==== Secciones ====
   Widget _buildCategoriesSection() {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -363,25 +205,16 @@ class TutoringScreen extends StatefulWidget {
             children: [
               Text("Categories",
                   style: GoogleFonts.inter(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
-              InkWell(
-                onTap: () {
-                  print("Navigating to all categories screen.");
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text("see all",
-                      style: GoogleFonts.inter(
-                          color: primaryColor, fontWeight: FontWeight.w600)),
-                ),
-              ),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: cs.onSurface)),
+              Text("see all",
+                  style: GoogleFonts.inter(
+                      color: cs.primary, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
         const SizedBox(height: 15),
-
-        // Lista Horizontal de Categorías
         SizedBox(
           height: 120,
           child: ListView.builder(
@@ -400,56 +233,57 @@ class TutoringScreen extends StatefulWidget {
     );
   }
 
-  // Top Tutors
   Widget _buildTopTutorsSection() {
+    final cs = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("Top Tutors",
-              style:
-                  GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold)),
+              style: GoogleFonts.inter(
+                  fontSize: 20, fontWeight: FontWeight.bold, color: cs.onSurface)),
           const SizedBox(height: 15),
           if (_filteredTopTutors.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Center(
-                child: Text(
-                  "No tutors found matching '$_searchText'",
-                  style: GoogleFonts.inter(color: Colors.grey),
-                ),
+            Center(
+              child: Text(
+                "No tutors found matching '$_searchText'",
+                style: GoogleFonts.inter(color: cs.onSurfaceVariant),
               ),
             )
           else
-            ..._filteredTopTutors
-                .map((tutor) => _TopTutorItem(tutor: tutor))
-                .toList(),
+            ..._filteredTopTutors.map((tutor) => _TopTutorItem(tutor: tutor)),
           const SizedBox(height: 25),
+
+          // Botón "View All Tutors"
           InkWell(
             onTap: () {
-              print("Navigating to full tutor list.");
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Información"),
+                  content: const Text("Pronto tendremos nuevos tutores."),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cerrar"))
+                  ],
+                ),
+              );
             },
             child: Container(
               width: double.infinity,
               height: 55,
               decoration: BoxDecoration(
-                color: Colors.black87,
+                color: cs.primary,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 0,
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
-                ],
               ),
               child: Center(
                 child: Text(
                   "View All Tutors",
                   style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: cs.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 16),
                 ),
@@ -462,33 +296,16 @@ class TutoringScreen extends StatefulWidget {
     );
   }
 
-  // Book Again
   Widget _buildBookAgainSection() {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Book Again",
-                  style: GoogleFonts.inter(
-                      fontSize: 20, fontWeight: FontWeight.bold)),
-              InkWell(
-                onTap: () {
-                  print("Navigating to previous sessions list.");
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text("see all",
-                      style: GoogleFonts.inter(
-                          color: primaryColor, fontWeight: FontWeight.w600)),
-                ),
-              ),
-            ],
-          ),
+          child: Text("Book Again",
+              style: GoogleFonts.inter(
+                  fontSize: 20, fontWeight: FontWeight.bold, color: cs.onSurface)),
         ),
         const SizedBox(height: 15),
         SizedBox(
@@ -502,7 +319,6 @@ class TutoringScreen extends StatefulWidget {
             },
           ),
         ),
-        const SizedBox(height: 40),
       ],
     );
   }
@@ -524,64 +340,49 @@ class TutoringScreen extends StatefulWidget {
     }
   }
 
-  // WIDGET DE NAVEGACIÓN INFERIOR
-
+  // ==== Bottom Navigation ====
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
-    return Material(
-      elevation: 10,
-      child: BottomNavigationBar(
-        currentIndex: currentIndex,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: colors.onSurfaceVariant,
-        backgroundColor: colors.surface,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        elevation: 0,
-        onTap: (int i) {
-          // pushReplacementNamed
-          if (i == 0) Navigator.pushReplacementNamed(context, '/dashboard');
-          if (i == 1) Navigator.pushReplacementNamed(context, '/tasks');
-          if (i == 2) Navigator.pushReplacementNamed(context, '/tutoring');
-          if (i == 3) Navigator.pushReplacementNamed(context, '/profile');
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: "Dashboard",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_outlined),
-            activeIcon: Icon(Icons.list_alt),
-            label: "Tasks",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_alt_outlined),
-            activeIcon: Icon(Icons.people_alt),
-            label: "Tutoring",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
-      ),
+    final cs = Theme.of(context).colorScheme;
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
+      selectedItemColor: cs.primary,
+      unselectedItemColor: cs.onSurfaceVariant,
+      backgroundColor: cs.surface,
+      type: BottomNavigationBarType.fixed,
+      showUnselectedLabels: true,
+      onTap: (int i) {
+        if (i == 0) context.go('/dashboard');
+        if (i == 1) context.go('/tasks');
+        if (i == 2) context.go('/tutoring');
+        if (i == 3) context.go('/profile');
+      },
+      items: const [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: "Dashboard"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt_outlined), activeIcon: Icon(Icons.list_alt), label: "Tasks"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.people_alt_outlined), activeIcon: Icon(Icons.people_alt), label: "Tutoring"),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: "Profile"),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: cardBackgroundColor,
+      backgroundColor: cs.background,
       appBar: AppBar(
-        backgroundColor: cardBackgroundColor,
+        backgroundColor: cs.surface,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          "Tutored",
-          style: GoogleFonts.lobster(fontSize: 28, color: Colors.black87),
-        ),
+        title: Text("Tutors",
+            style: GoogleFonts.inter(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface)),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -592,7 +393,6 @@ class TutoringScreen extends StatefulWidget {
               _buildTopTutorsSection(),
             ] else
               _buildBookAgainSection(),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -601,7 +401,7 @@ class TutoringScreen extends StatefulWidget {
   }
 }
 
-// WIDGETS AUXILIARES
+// ==== Widgets auxiliares ====
 
 Widget _buildRatingStars(double rating, {bool showReviews = true}) {
   int fullStars = rating.floor();
@@ -633,7 +433,6 @@ Widget _buildRatingStars(double rating, {bool showReviews = true}) {
   );
 }
 
-// Tarjeta de Categoría
 class _CategoryCard extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -642,10 +441,10 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // InkWell para efecto táctil
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
-        print("Tapped on category: $label");
+        debugPrint("Tapped on category: $label");
       },
       borderRadius: BorderRadius.circular(15),
       child: Container(
@@ -653,26 +452,17 @@ class _CategoryCard extends StatelessWidget {
         margin: const EdgeInsets.only(right: 15),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: cardBackgroundColor,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          border: Border.all(color: cs.outlineVariant),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Top Rated" Chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
+                color: primaryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text("Top Rated",
@@ -682,13 +472,13 @@ class _CategoryCard extends StatelessWidget {
                       fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 5),
-
             Icon(icon, color: primaryColor, size: 30),
             const Spacer(),
-
             Text(label,
                 style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600, fontSize: 14)),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: cs.onSurface)),
           ],
         ),
       ),
@@ -703,24 +493,27 @@ class _TopTutorItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
-        print("Navigating to tutor profile: ${tutor.name}");
+        debugPrint("Navigating to tutor profile: ${tutor.name}");
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            // Foto del Tutor
-            const CircleAvatar(
+            CircleAvatar(
               radius: 28,
-              backgroundColor: Color(0xFFE0F2F1),
-              child: Icon(Icons.person, color: Color(0xFF00796B)),
+              backgroundColor: Colors.grey.shade300,
+              backgroundImage: tutor.profileImageUrl != null
+                  ? NetworkImage(tutor.profileImageUrl!)
+                  : null,
+              child: tutor.profileImageUrl == null
+                  ? const Icon(Icons.person, color: primaryColor)
+                  : null,
             ),
             const SizedBox(width: 15),
-
-            // Nombre y Materia
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -728,25 +521,26 @@ class _TopTutorItem extends StatelessWidget {
                   Text(
                     tutor.name,
                     style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700, fontSize: 16),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: cs.onSurface),
                   ),
                   Text(tutor.subject,
-                      style:
-                          GoogleFonts.inter(color: Colors.grey, fontSize: 13)),
+                      style: GoogleFonts.inter(
+                          color: cs.onSurfaceVariant, fontSize: 13)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       _buildRatingStars(tutor.rating, showReviews: false),
                       Text(" (${tutor.reviews} reviews)",
                           style: GoogleFonts.inter(
-                              color: Colors.grey, fontSize: 12)),
+                              color: cs.onSurfaceVariant, fontSize: 12)),
                     ],
                   ),
                 ],
               ),
             ),
-
-            const Icon(Icons.arrow_forward_ios, size: 16, color: primaryColor),
+            Icon(Icons.arrow_forward_ios, size: 16, color: cs.primary),
           ],
         ),
       ),
@@ -761,17 +555,17 @@ class _BookAgainCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // InkWell para efecto táctil y redirección
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: () {
-        print("Re-booking session with tutor: ${tutor.name}");
+        debugPrint("Re-booking session with tutor: ${tutor.name}");
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 120,
         margin: const EdgeInsets.only(right: 15),
         decoration: BoxDecoration(
-          color: backgroundColor.withOpacity(0.5),
+          color: cs.surfaceVariant.withOpacity(0.5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -780,14 +574,22 @@ class _BookAgainCard extends StatelessWidget {
             Container(
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
+                image: tutor.profileImageUrl != null
+                    ? DecorationImage(
+                        image: NetworkImage(tutor.profileImageUrl!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+                color: Colors.grey.shade300,
               ),
-              child: Center(
-                child:
-                    Icon(Icons.photo_camera_back, color: Colors.grey.shade600),
-              ),
+              child: tutor.profileImageUrl == null
+                  ? Center(
+                      child: Icon(Icons.person,
+                          color: Colors.grey.shade600, size: 40),
+                    )
+                  : null,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -795,10 +597,11 @@ class _BookAgainCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(tutor.name,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600, color: cs.onSurface)),
                   Text(tutor.subject,
-                      style:
-                          GoogleFonts.inter(color: Colors.grey, fontSize: 12)),
+                      style: GoogleFonts.inter(
+                          color: cs.onSurfaceVariant, fontSize: 12)),
                   _buildRatingStars(tutor.rating, showReviews: false),
                 ],
               ),

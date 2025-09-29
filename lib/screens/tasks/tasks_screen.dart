@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
-// (Opcional) Mantengo la constante, pero ya no hardcodeamos blancos/negros.
-const Color primaryColor = Color(0xFF1E88E5);
+const Color primaryColor = Colors.blue;
+const Color accentColor = Color(0xFF4CAF50);
 
 class Task {
   final String id;
@@ -28,15 +29,8 @@ class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    final tasksToday = [
-      {"title": "Complete Calculus Assignment", "subject": "Math 101", "due": "11:59 PM"},
-      {"title": "Read Chapter 5", "subject": "History 202", "due": "08:00 PM"},
-      {"title": "Lab Report", "subject": "Physics 301", "due": "05:30 PM"},
-    ];
+  State<TasksScreen> createState() => _TasksScreenState();
+}
 
 class _TasksScreenState extends State<TasksScreen>
     with SingleTickerProviderStateMixin {
@@ -93,6 +87,7 @@ class _TasksScreenState extends State<TasksScreen>
     super.dispose();
   }
 
+  // --- Funciones de lógica ---
   void _toggleTaskStatus(Task task) {
     setState(() {
       final index = allTasks.indexWhere((t) => t.id == task.id);
@@ -100,16 +95,58 @@ class _TasksScreenState extends State<TasksScreen>
         allTasks[index].isCompleted = !allTasks[index].isCompleted;
       }
     });
+    _showMessage(context, task.isCompleted
+        ? "✅ Tarea completada"
+        : "↩️ Tarea marcada como pendiente");
   }
 
   void _editTask(Task task) {
-    print('Editing task: ${task.title}');
+    _showMessage(context, "📝 Tarea editada con éxito");
   }
 
   void _deleteTask(Task task) {
     setState(() {
       allTasks.removeWhere((t) => t.id == task.id);
     });
+    _showMessage(context, "🗑️ Tarea eliminada");
+  }
+
+  void _addNewTask(BuildContext context) {
+    final newTask = Task(
+      id: DateTime.now().toString(),
+      title: "Nueva tarea de ejemplo",
+      subject: "General",
+      dueTime: "10:00 AM",
+      dueDate: "Tomorrow",
+      color: Colors.teal,
+    );
+
+    setState(() {
+      allTasks.add(newTask);
+    });
+
+    _showMessage(context, "✅ Tarea agregada correctamente");
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   List<Task> _getFilteredTasks(int index) {
@@ -134,176 +171,228 @@ class _TasksScreenState extends State<TasksScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      // AppBar toma colores del tema (surface / onSurface)
-      appBar: AppBar(
-        title: const Text("Tasks"),
-        elevation: 0,
-      ),
-
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(context),
+      body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "October 2024",
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Icon(Icons.calendar_month, color: cs.primary),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Semana compacta
-          SizedBox(
-            height: 90,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(7, (index) {
-                final day = index + 21;
-                final isToday = day == 24;
-                return Column(
-                  children: [
-                    Text(
-                      ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index],
-                      style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 6),
-                    CircleAvatar(
-                      radius: 18,
-                      backgroundColor: isToday ? cs.primary : cs.surfaceVariant,
-                      child: Text(
-                        "$day",
-                        style: TextStyle(
-                          color: isToday ? cs.onPrimary : cs.onSurface,
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }),
+          _buildTabBar(theme, isDark),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTaskList(_getFilteredTasks(0), theme, isDark),
+                _buildTaskList(_getFilteredTasks(1), theme, isDark),
+                _buildTaskList(_getFilteredTasks(2), theme, isDark),
+              ],
             ),
           ),
+        ],
+      ),
 
-          const SizedBox(height: 20),
-          Text("Today", style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
+      // 🔥 FAB que agrega tareas y muestra snackbar
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          _addNewTask(context);
+        },
+        icon: const Icon(Icons.add_rounded, size: 28),
+        label: Text(
+          "New Task",
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      bottomNavigationBar: _buildBottomNavigationBar(context, isDark, 1),
+    );
+  }
 
-          // Lista de tareas
-          ...tasksToday.map(
-            (task) => Card(
-              color: cs.surface,
-              surfaceTintColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-              child: ListTile(
-                leading: Icon(Icons.assignment, color: cs.primary),
-                title: Text(task["title"]!, style: theme.textTheme.bodyLarge),
-                subtitle: Text(task["subject"]!, style: theme.textTheme.bodyMedium),
-                trailing: Text(
-                  task["due"]!,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: cs.error),
+  // ----------- UI WIDGETS -------------
+
+  AppBar _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return AppBar(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back,
+            color: isDark ? Colors.white70 : Colors.black54),
+        onPressed: () => context.pop(),
+      ),
+      title: Text(
+        "Tasks",
+        style: GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabBar(ThemeData theme, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Material(
+        color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(25),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            color: primaryColor,
+          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: isDark ? Colors.white70 : Colors.black54,
+          labelStyle:
+              GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+          tabs: const [
+            Tab(text: "To Do"),
+            Tab(text: "In Progress"),
+            Tab(text: "Completed"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaskList(List<Task> tasks, ThemeData theme, bool isDark) {
+    if (tasks.isEmpty) {
+      final String emptyMessage = _tabController.index == 2
+          ? '¡Todas tus tareas están completas!'
+          : 'No tienes tareas pendientes.';
+      return Center(
+        child: Text(
+          emptyMessage,
+          style: GoogleFonts.inter(
+              fontSize: 18, color: isDark ? Colors.white54 : Colors.grey),
+        ),
+      );
+    }
+
+    final groupedTasks = _groupTasksByDate(tasks);
+    final sortedDates = groupedTasks.keys.toList();
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 100, top: 10),
+      itemCount: sortedDates.length,
+      itemBuilder: (context, dateIndex) {
+        final date = sortedDates[dateIndex];
+        final tasksForDate = groupedTasks[date]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 8),
+              child: Text(
+                date,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: primaryColor.withOpacity(0.8),
                 ),
               ),
             ),
-          ),
+            ...tasksForDate.map((task) => _TaskCard(
+                  task: task,
+                  onToggleStatus: () => _toggleTaskStatus(task),
+                  onEdit: () => _editTask(task),
+                  onDelete: () => _deleteTask(task),
+                  isDark: isDark,
+                )),
+          ],
+        );
+      },
+    );
+  }
 
-          const SizedBox(height: 20),
-
-          // Botón Agregar
-          ElevatedButton.icon(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              // Deja que el tema maneje el color; si quieres forzar:
-              // backgroundColor: cs.primary,
-              // foregroundColor: cs.onPrimary,
-            ),
-            icon: const Icon(Icons.add),
-            label: const Text("Add New Task"),
-          ),
-        ],
-      ),
-
-      // Bottom Navigation sin blancos hardcodeados
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1, // Tasks
-        selectedItemColor: cs.primary,
-        unselectedItemColor: cs.onSurfaceVariant,
-        backgroundColor: cs.surface,
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: true,
-        elevation: 0,
-        onTap: (i) {
-          if (i == 0) Navigator.pushNamed(context, '/dashboard');
-          if (i == 1) return; // ya estás en Tasks
-          if (i == 2) Navigator.pushNamed(context, '/tutoring');
-          if (i == 3) Navigator.pushNamed(context, '/profile');
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: "Dashboard",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_outlined),
-            activeIcon: Icon(Icons.list_alt),
-            label: "Tasks",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people_alt_outlined),
-            activeIcon: Icon(Icons.people_alt),
-            label: "Tutoring",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
-      ),
+  Widget _buildBottomNavigationBar(
+      BuildContext context, bool isDark, int currentIndex) {
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
+      selectedItemColor: primaryColor,
+      unselectedItemColor: isDark ? Colors.white54 : Colors.grey.shade600,
+      backgroundColor: isDark ? Colors.black : Colors.white,
+      type: BottomNavigationBarType.fixed,
+      showUnselectedLabels: true,
+      onTap: (int i) {
+        if (i == 0) context.go('/dashboard');
+        if (i == 1) context.go('/tasks');
+        if (i == 2) context.go('/tutoring');
+        if (i == 3) context.go('/profile');
+      },
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: "Dashboard",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.list_alt_outlined),
+          activeIcon: Icon(Icons.list_alt),
+          label: "Tasks",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.people_alt_outlined),
+          activeIcon: Icon(Icons.people_alt),
+          label: "Tutoring",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
+          label: "Profile",
+        ),
+      ],
     );
   }
 }
 
-// WIDGET Taskcard
+// ------------ TaskCard ----------------
 
 class _TaskCard extends StatelessWidget {
   final Task task;
   final VoidCallback onToggleStatus;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool isDark;
 
   const _TaskCard({
     required this.task,
     required this.onToggleStatus,
     required this.onEdit,
     required this.onDelete,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = isDark ? Colors.grey.shade900 : Colors.white;
+
     return InkWell(
       onTap: onToggleStatus,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: cardBackgroundColor,
+          color: bgColor,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-              color:
-                  task.isCompleted ? accentColor : task.color.withOpacity(0.5),
-              width: 1.5),
+            color: task.isCompleted ? accentColor : task.color.withOpacity(0.5),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: task.color.withOpacity(0.1),
-              spreadRadius: 0,
               blurRadius: 5,
               offset: const Offset(0, 3),
             )
@@ -318,20 +407,23 @@ class _TaskCard extends StatelessWidget {
                   Text(
                     task.subject,
                     style: GoogleFonts.inter(
-                        fontWeight: FontWeight.bold,
-                        color: task.color,
-                        fontSize: 12),
+                      fontWeight: FontWeight.bold,
+                      color: task.color,
+                      fontSize: 12,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     task.title,
                     style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        decoration: task.isCompleted
-                            ? TextDecoration.lineThrough
-                            : null,
-                        color: task.isCompleted ? Colors.grey : Colors.black87),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      decoration:
+                          task.isCompleted ? TextDecoration.lineThrough : null,
+                      color: task.isCompleted
+                          ? Colors.grey
+                          : (isDark ? Colors.white : Colors.black87),
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -343,7 +435,8 @@ class _TaskCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(Icons.more_vert,
+                      color: isDark ? Colors.white70 : Colors.black54),
                   onSelected: (String result) {
                     if (result == 'edit') {
                       onEdit();
@@ -366,7 +459,9 @@ class _TaskCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   task.dueTime,
-                  style: GoogleFonts.inter(fontSize: 12, color: Colors.black54),
+                  style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: isDark ? Colors.white54 : Colors.black54),
                 ),
               ],
             ),

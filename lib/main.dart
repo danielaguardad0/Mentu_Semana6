@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
+// Pantallas
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/login/login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
@@ -12,6 +14,48 @@ import 'screens/profile/profile_screen.dart';
 
 // === Provider único para el ThemeMode ===
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+
+// === Configuración de GoRouter ===
+final appRouter = GoRouter(
+  initialLocation: '/onboarding',
+  routes: [
+    GoRoute(
+      path: '/onboarding',
+      name: 'onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      name: 'login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      name: 'dashboard',
+      builder: (context, state) => const DashboardScreen(),
+    ),
+    GoRoute(
+      path: '/calendar',
+      name: 'calendar',
+      builder: (context, state) => const CalendarScreen(),
+    ),
+    GoRoute(
+      path: '/tutoring',
+      name: 'tutoring',
+      builder: (context, state) => const TutoringScreen(),
+    ),
+    GoRoute(
+      path: '/tasks',
+      name: 'tasks',
+      builder: (context, state) => const TasksScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      name: 'profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
+  ],
+);
 
 void main() {
   runApp(const ProviderScope(child: MentuApp()));
@@ -38,11 +82,7 @@ class MentuApp extends ConsumerWidget {
       colorScheme: lightColorScheme,
       textTheme: GoogleFonts.interTextTheme(),
       useMaterial3: true,
-
-      // Fondo general de pantallas
       scaffoldBackgroundColor: lightColorScheme.background,
-
-      // AppBar se pinta con surface (no blanco duro)
       appBarTheme: AppBarTheme(
         backgroundColor: lightColorScheme.surface,
         foregroundColor: lightColorScheme.onSurface,
@@ -50,8 +90,6 @@ class MentuApp extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
-
-      // BottomNavigationBar (Material 2)
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: lightColorScheme.surface,
         selectedItemColor: lightColorScheme.primary,
@@ -59,8 +97,6 @@ class MentuApp extends ConsumerWidget {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-
-      // NavigationBar (Material 3) por si lo usas
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: lightColorScheme.surface,
         indicatorColor: lightColorScheme.secondaryContainer,
@@ -69,10 +105,8 @@ class MentuApp extends ConsumerWidget {
           TextStyle(color: lightColorScheme.onSurfaceVariant),
         ),
       ),
-
-      // 👇 Usa BottomAppBarThemeData (no BottomAppBarTheme)
       bottomAppBarTheme: const BottomAppBarThemeData(
-        color: Colors.transparent, // o lightColorScheme.surface si prefieres sólido
+        color: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
@@ -91,9 +125,7 @@ class MentuApp extends ConsumerWidget {
         ThemeData(brightness: Brightness.dark).textTheme,
       ),
       useMaterial3: true,
-
       scaffoldBackgroundColor: darkColorScheme.background,
-
       appBarTheme: AppBarTheme(
         backgroundColor: darkColorScheme.surface,
         foregroundColor: darkColorScheme.onSurface,
@@ -101,7 +133,6 @@ class MentuApp extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
-
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: darkColorScheme.surface,
         selectedItemColor: darkColorScheme.primary,
@@ -109,7 +140,6 @@ class MentuApp extends ConsumerWidget {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkColorScheme.surface,
         indicatorColor: darkColorScheme.secondaryContainer,
@@ -118,31 +148,20 @@ class MentuApp extends ConsumerWidget {
           TextStyle(color: darkColorScheme.onSurfaceVariant),
         ),
       ),
-
-      // 👇 Usa BottomAppBarThemeData (no BottomAppBarTheme)
       bottomAppBarTheme: const BottomAppBarThemeData(
-        color: Colors.transparent, // o darkColorScheme.surface si prefieres sólido
+        color: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
       ),
     );
 
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Mentu - Organización Académica',
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeMode,
-      initialRoute: '/onboarding',
-      routes: {
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
-        '/calendar': (context) => const CalendarScreen(),
-        '/tutoring': (context) => TutoringScreen(),
-        '/tasks': (context) => const TasksScreen(),
-        '/profile': (context) => const ProfileScreen(),
-      },
+      routerConfig: appRouter,
     );
   }
 }
