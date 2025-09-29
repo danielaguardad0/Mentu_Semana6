@@ -37,7 +37,6 @@ class _TasksScreenState extends State<TasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Lista de tareas iniciales
   List<Task> allTasks = [
     Task(
         id: '1',
