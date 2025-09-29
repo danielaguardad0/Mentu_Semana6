@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 // --- T E M A / C O L O R E S ---
 const Color primaryColor = Color(0xFF1E88E5); // Azul vibrante
-const Color secondaryColor = Color(0xFFE3F2FD); // Fondo de chips
-const Color searchBarColor =
-    Color(0xFFF0F0F0); // Gris claro para la barra de búsqueda
 
 class TutoringScreen extends StatelessWidget {
   const TutoringScreen({super.key});
@@ -39,19 +36,21 @@ class TutoringScreen extends StatelessWidget {
     },
   ];
 
-  Widget _buildSubjectChip(String label, bool isSelected) {
+  Widget _buildSubjectChip(
+      BuildContext context, String label, bool isSelected) {
+    final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: Chip(
         label: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
+            color: isSelected ? colors.onPrimary : colors.onSurface,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
-        backgroundColor: isSelected ? primaryColor : secondaryColor,
+        backgroundColor: isSelected ? primaryColor : colors.surfaceVariant,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -60,16 +59,18 @@ class TutoringScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturedTutorCard(Map<String, String> tutor) {
+  Widget _buildFeaturedTutorCard(
+      BuildContext context, Map<String, String> tutor) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       width: 150,
       margin: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: colors.shadow.withOpacity(0.1),
             spreadRadius: 2,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -81,13 +82,16 @@ class TutoringScreen extends StatelessWidget {
         children: [
           Container(
             height: 140,
-            decoration: const BoxDecoration(
-              color: Color(0xFFCFD8DC),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            decoration: BoxDecoration(
+              color: colors.secondaryContainer,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
             ),
-            child: const Center(
-              child: Text("Image Placeholder",
-                  style: TextStyle(color: Colors.black54)),
+            child: Center(
+              child: Text(
+                "Image Placeholder",
+                style: TextStyle(color: colors.onSecondaryContainer),
+              ),
             ),
           ),
           Padding(
@@ -97,12 +101,11 @@ class TutoringScreen extends StatelessWidget {
               children: [
                 Text(
                   tutor["name"]!,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
                 Text(
                   tutor["subject"]!,
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -111,8 +114,7 @@ class TutoringScreen extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       tutor["reviews"]!,
-                      style:
-                          const TextStyle(color: Colors.black54, fontSize: 12),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -124,15 +126,16 @@ class TutoringScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAllTutorItem(Map<String, String> tutor) {
+  Widget _buildAllTutorItem(BuildContext context, Map<String, String> tutor) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: colors.shadow.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 2),
@@ -140,34 +143,38 @@ class TutoringScreen extends StatelessWidget {
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: const CircleAvatar(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
           radius: 28,
-          backgroundColor: Color(0xFFE0F2F1),
-          child: Icon(Icons.person, color: Color(0xFF00796B)),
+          backgroundColor: colors.secondaryContainer,
+          child: Icon(Icons.person, color: colors.onSecondaryContainer),
         ),
         title: Text(
           tutor["name"]!,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(tutor["subject"]!, style: const TextStyle(color: Colors.grey)),
+            Text(
+              tutor["subject"]!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             Row(
               children: [
                 const Icon(Icons.star, color: Colors.amber, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   tutor["rating"]!,
-                  style: const TextStyle(color: Colors.black87),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
           ],
         ),
-        trailing:
-            const Icon(Icons.arrow_forward_ios, size: 16, color: primaryColor),
+        trailing: const Icon(Icons.arrow_forward_ios,
+            size: 16, color: primaryColor),
         onTap: () {},
       ),
     );
@@ -175,19 +182,21 @@ class TutoringScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
+        title: Text(
           "Find a Tutor",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         centerTitle: false,
-        backgroundColor: Colors.white,
+        backgroundColor: colors.background,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -198,17 +207,19 @@ class TutoringScreen extends StatelessWidget {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: searchBarColor,
+                  color: colors.surfaceVariant,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: const TextField(
+                child: TextField(
                   decoration: InputDecoration(
                     hintText: "Search by subject or tutor name",
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
+                    hintStyle: TextStyle(color: colors.onSurfaceVariant),
+                    prefixIcon: Icon(Icons.search,
+                        color: colors.onSurfaceVariant),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
@@ -218,22 +229,17 @@ class TutoringScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 15),
                 child: Row(
                   children: [
-                    _buildSubjectChip("All", true),
-                    _buildSubjectChip("Math", false),
-                    _buildSubjectChip("Science", false),
-                    _buildSubjectChip("English", false),
-                    _buildSubjectChip("History", false),
-                    _buildSubjectChip("Physics", false),
+                    _buildSubjectChip(context, "All", true),
+                    _buildSubjectChip(context, "Math", false),
+                    _buildSubjectChip(context, "Science", false),
+                    _buildSubjectChip(context, "English", false),
+                    _buildSubjectChip(context, "History", false),
+                    _buildSubjectChip(context, "Physics", false),
                   ],
                 ),
               ),
-              const Text(
-                "Featured Tutors",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
+              Text("Featured Tutors",
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 15),
               SizedBox(
                 height: 250,
@@ -241,23 +247,18 @@ class TutoringScreen extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   children: [
                     ...featuredTutors
-                        .map((tutor) => _buildFeaturedTutorCard(tutor)),
+                        .map((tutor) => _buildFeaturedTutorCard(context, tutor)),
                     const SizedBox(width: 15),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                "All Tutors",
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
-              ),
+              Text("All Tutors",
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 15),
               Column(
                 children: allTutors
-                    .map((tutor) => _buildAllTutorItem(tutor))
+                    .map((tutor) => _buildAllTutorItem(context, tutor))
                     .toList(),
               ),
               const SizedBox(height: 20),
@@ -268,8 +269,8 @@ class TutoringScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2, // Tutors
         selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey.shade600,
-        backgroundColor: Colors.white,
+        unselectedItemColor: colors.onSurfaceVariant,
+        backgroundColor: colors.surface,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
         elevation: 10,

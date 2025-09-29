@@ -7,61 +7,71 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Scaffold(
+      // AppBar usa los colores de theme.appBarTheme / colorScheme.surface
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {},
+          ),
+        ],
+      ),
+
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Dashboard",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
             // Upcoming Section
-            const Text(
+            Text(
               "Upcoming",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
-            _buildTaskCard("Homework 1", "Math 101", "Due Today"),
-            _buildTaskCard("Lab Report", "Physics 202", "Due Tomorrow"),
-            _buildTaskCard("Essay Outline", "History 303", "Due in 2 days"),
+            _buildTaskCard(context, "Homework 1", "Math 101", "Due Today"),
+            _buildTaskCard(context, "Lab Report", "Physics 202", "Due Tomorrow"),
+            _buildTaskCard(context, "Essay Outline", "History 303", "Due in 2 days"),
             const SizedBox(height: 20),
 
             // Progress Section
-            const Text(
+            Text(
               "Progress",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
             Card(
+              color: cs.surface,
+              surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Overall Grade", style: TextStyle(fontSize: 14)),
+                    Text("Overall Grade", style: theme.textTheme.bodyMedium),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       "85%",
-                      style:
-                          TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const Text("Last 30 Days +5%",
-                        style: TextStyle(color: Colors.green)),
+                    Text(
+                      "Last 30 Days +5%",
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: cs.tertiary, // verde temático si tu seed lo da; alterna a cs.primary
+                      ),
+                    ),
                     const SizedBox(height: 16),
                     SizedBox(
                       height: 80,
@@ -69,21 +79,21 @@ class DashboardScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _bar(40),
-                          _bar(60),
-                          _bar(30),
-                          _bar(70),
+                          _bar(context, 40),
+                          _bar(context, 60),
+                          _bar(context, 30),
+                          _bar(context, 70),
                         ],
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text("Week 1"),
-                        Text("Week 2"),
-                        Text("Week 3"),
-                        Text("Week 4"),
+                        Text("Week 1", style: theme.textTheme.bodySmall),
+                        Text("Week 2", style: theme.textTheme.bodySmall),
+                        Text("Week 3", style: theme.textTheme.bodySmall),
+                        Text("Week 4", style: theme.textTheme.bodySmall),
                       ],
                     )
                   ],
@@ -93,14 +103,20 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Tutoring Section
-            const Text(
+            Text(
               "Tutoring",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 10),
-            Card(
+            Card
+            (
+              color: cs.surface,
+              surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -109,14 +125,22 @@ class DashboardScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Math 101",
-                              style: TextStyle(color: Colors.grey)),
+                          Text("Math 101",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              )),
                           const SizedBox(height: 4),
-                          const Text("Find a Tutor",
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(
+                            "Find a Tutor",
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          const Text("Get help with your upcoming exam"),
+                          Text(
+                            "Get help with your upcoming exam",
+                            style: theme.textTheme.bodyMedium,
+                          ),
                           const SizedBox(height: 8),
                           ElevatedButton(
                             onPressed: () {
@@ -130,8 +154,14 @@ class DashboardScreen extends StatelessWidget {
                     Container(
                       width: 80,
                       height: 80,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.image_not_supported),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceVariant,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: cs.onSurfaceVariant,
+                      ),
                     )
                   ],
                 ),
@@ -141,17 +171,17 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
 
-      // 🔹 Bottom Navigation uniforme
+      // Bottom Navigation con colores del tema (sin blancos hardcodeados)
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0, // Dashboard
-        selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey.shade600,
-        backgroundColor: Colors.white,
+        selectedItemColor: cs.primary,
+        unselectedItemColor: cs.onSurfaceVariant,
+        backgroundColor: cs.surface,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
-        elevation: 10,
+        elevation: 0,
         onTap: (i) {
-          if (i == 0) Navigator.pushNamed(context, '/dashboard');
+          if (i == 0) return; // ya estás en dashboard
           if (i == 1) Navigator.pushNamed(context, '/tasks');
           if (i == 2) Navigator.pushNamed(context, '/tutoring');
           if (i == 3) Navigator.pushNamed(context, '/profile');
@@ -182,24 +212,40 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  static Widget _buildTaskCard(String title, String subject, String due) {
+  static Widget _buildTaskCard(
+    BuildContext context,
+    String title,
+    String subject,
+    String due,
+  ) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
     return Card(
+      color: cs.surface,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subject),
-        trailing: Text(due,
-            style: const TextStyle(color: Color.fromARGB(255, 5, 8, 51))),
+        title: Text(
+          title,
+          style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(subject, style: theme.textTheme.bodyMedium),
+        trailing: Text(
+          due,
+          style: theme.textTheme.bodyMedium?.copyWith(color: cs.primary),
+        ),
       ),
     );
   }
 
-  static Widget _bar(double height) {
+  static Widget _bar(BuildContext context, double height) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: 20,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.blue,
+        color: cs.primary,
         borderRadius: BorderRadius.circular(6),
       ),
     );

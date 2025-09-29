@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../main.dart'; // 👈 importa el provider que definimos en main.dart
 
 // Definimos los colores para mantener la consistencia del diseño.
 const Color primaryColor = Color(0xFF1E88E5); // Azul principal
@@ -9,7 +11,7 @@ const Color iconBackgroundColor =
 const Color dividerColor =
     Color(0xFFEEEEEE); // Gris muy claro para los divisores
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   // Widget auxiliar para construir un ítem de configuración
@@ -47,7 +49,8 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // Widget auxiliar para construir un bloque de soporte con cards
-  Widget _buildSupportSectionItem({
+  Widget _buildSupportSectionItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     VoidCallback? onTap,
@@ -66,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
     return ClipRRect(
       borderRadius: borderRadius,
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         child: InkWell(
           onTap: onTap,
           child: Column(
@@ -99,9 +102,11 @@ class ProfileScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -112,7 +117,7 @@ class ProfileScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         centerTitle: false,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -121,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             // --- PROFILE HEADER ---
             Container(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Column(
                 children: [
@@ -161,12 +166,13 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     "sophia.clark@email.com",
-                    style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 15, color: Colors.grey),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
+
             // --- ACCOUNT SECTION ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -205,13 +211,24 @@ class ProfileScreen extends StatelessWidget {
                             print("Navegar a Notificaciones");
                           },
                         ),
-                        _buildSettingItem(
-                          icon: Icons.settings_outlined,
-                          title: "Preferences",
-                          onTap: () {
-                            print("Navegar a Preferencias");
+                        // 🔥 Interruptor para modo oscuro
+                        SwitchListTile(
+                          secondary: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: iconBackgroundColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.dark_mode,
+                                color: primaryColor),
+                          ),
+                          title: const Text("Dark Mode",
+                              style: TextStyle(fontSize: 16)),
+                          value: themeMode == ThemeMode.dark,
+                          onChanged: (isDark) {
+                            ref.read(themeModeProvider.notifier).state =
+                                isDark ? ThemeMode.dark : ThemeMode.light;
                           },
-                          isLastItem: true,
                         ),
                       ],
                     ),
@@ -220,6 +237,7 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+
             // --- SUPPORT SECTION ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -245,6 +263,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildSupportSectionItem(
+                          context,
                           icon: Icons.help_outline,
                           title: "Help Center",
                           onTap: () {
@@ -253,6 +272,7 @@ class ProfileScreen extends StatelessWidget {
                           isFirstItem: true,
                         ),
                         _buildSupportSectionItem(
+                          context,
                           icon: Icons.mail_outline,
                           title: "Contact Us",
                           onTap: () {
@@ -260,6 +280,7 @@ class ProfileScreen extends StatelessWidget {
                           },
                         ),
                         _buildSupportSectionItem(
+                          context,
                           icon: Icons.description_outlined,
                           title: "Terms of Service",
                           onTap: () {
@@ -267,6 +288,7 @@ class ProfileScreen extends StatelessWidget {
                           },
                         ),
                         _buildSupportSectionItem(
+                          context,
                           icon: Icons.shield_outlined,
                           title: "Privacy Policy",
                           onTap: () {
@@ -284,12 +306,13 @@ class ProfileScreen extends StatelessWidget {
           ],
         ),
       ),
-      // --- B O T T O M N A V I G A T I O N ---
+
+      // --- BOTTOM NAVIGATION ---
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3, // 'Profile' es la cuarta sección
         selectedItemColor: primaryColor,
         unselectedItemColor: Colors.grey.shade600,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface, // ✅ corregido
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
         elevation: 10,
