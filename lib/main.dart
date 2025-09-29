@@ -35,7 +35,7 @@ class MentuApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/calendar': (context) => const CalendarScreen(),
-        '/tutoring': (context) => const TutoringScreen(),
+        '/tutoring': (context) => TutoringScreen(),
         '/tasks': (context) => const TasksScreen(),
         '/profile': (context) =>
             const ProfileScreen(), // <--- 2. Ruta de ProfileScreen añadida
