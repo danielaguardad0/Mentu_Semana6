@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// --- C O L O R E S ---
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
 const Color backgroundColor = Color(0xFFD2EBE8);

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Colores consistentes de Mentu
 const Color primaryColor = Colors.blue;
-const Color accentColor = Color(0xFF4CAF50); // Verde para progreso/completado
-const Color backgroundColor = Color(0xFFD2EBE8); // Fondo claro
+const Color accentColor = Color(0xFF4CAF50);
+const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 
 class Task {
-  final String id; // ID único
+  final String id;
   final String title;
   final String subject;
   final String dueTime;
@@ -90,7 +89,6 @@ class _TasksScreenState extends State<TasksScreen>
     super.dispose();
   }
 
-  // Lógica para marcar/desmarcar una tarea como completada
   void _toggleTaskStatus(Task task) {
     setState(() {
       final index = allTasks.indexWhere((t) => t.id == task.id);
@@ -100,19 +98,16 @@ class _TasksScreenState extends State<TasksScreen>
     });
   }
 
-  // Lógica para simular la edición (por ahora, solo imprime)
   void _editTask(Task task) {
     print('Editing task: ${task.title}');
   }
 
-  // Lógica para eliminar permanentemente una tarea
   void _deleteTask(Task task) {
     setState(() {
       allTasks.removeWhere((t) => t.id == task.id);
     });
   }
 
-  // Filtrar las tareas según el índice de la pestaña
   List<Task> _getFilteredTasks(int index) {
     if (index == 2) {
       return allTasks.where((task) => task.isCompleted).toList();
@@ -121,7 +116,6 @@ class _TasksScreenState extends State<TasksScreen>
     }
   }
 
-  // Agrupa las tareas por día
   Map<String, List<Task>> _groupTasksByDate(List<Task> tasks) {
     final Map<String, List<Task>> grouped = {};
     for (var task in tasks) {
@@ -155,9 +149,7 @@ class _TasksScreenState extends State<TasksScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Acción para añadir nueva tarea
-        },
+        onPressed: () {},
         icon: const Icon(Icons.add_rounded, size: 28),
         label: Text("New Task",
             style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
@@ -170,7 +162,7 @@ class _TasksScreenState extends State<TasksScreen>
     );
   }
 
-  // --- WIDGETS DE CONSTRUCCIÓN ---
+  // WIDGETS DE CONSTRUCCIÓN
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
@@ -322,9 +314,7 @@ class _TasksScreenState extends State<TasksScreen>
   }
 }
 
-// -------------------------------------------------------------------
-// WIDGET DE LA TARJETA DE TAREA
-// -------------------------------------------------------------------
+// WIDGET Taskcard
 
 class _TaskCard extends StatelessWidget {
   final Task task;
