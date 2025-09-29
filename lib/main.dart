@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+
+import 'config/theme_provider.dart';
 
 // Pantallas
 import 'screens/onboarding/onboarding_screen.dart';
@@ -11,9 +12,6 @@ import 'screens/calendar/calendar_screen.dart';
 import 'screens/tutoring/tutoring_screen.dart';
 import 'screens/tasks/tasks_screen.dart';
 import 'screens/profile/profile_screen.dart';
-
-// === Provider único para el ThemeMode ===
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 
 // === Configuración de GoRouter ===
 final appRouter = GoRouter(
@@ -66,101 +64,12 @@ class MentuApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
-
-    // Paleta semilla (se adapta a light/dark)
-    const seed = Colors.blue;
-
-    // ------ Tema Claro ------
-    final lightColorScheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.light,
-    );
-
-    final ThemeData lightTheme = ThemeData(
-      brightness: Brightness.light,
-      colorScheme: lightColorScheme,
-      textTheme: GoogleFonts.interTextTheme(),
-      useMaterial3: true,
-      scaffoldBackgroundColor: lightColorScheme.background,
-      appBarTheme: AppBarTheme(
-        backgroundColor: lightColorScheme.surface,
-        foregroundColor: lightColorScheme.onSurface,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: lightColorScheme.surface,
-        selectedItemColor: lightColorScheme.primary,
-        unselectedItemColor: lightColorScheme.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: lightColorScheme.surface,
-        indicatorColor: lightColorScheme.secondaryContainer,
-        surfaceTintColor: Colors.transparent,
-        labelTextStyle: MaterialStateProperty.all(
-          TextStyle(color: lightColorScheme.onSurfaceVariant),
-        ),
-      ),
-      bottomAppBarTheme: const BottomAppBarThemeData(
-        color: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-      ),
-    );
-
-    // ------ Tema Oscuro ------
-    final darkColorScheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.dark,
-    );
-
-    final ThemeData darkTheme = ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: darkColorScheme,
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData(brightness: Brightness.dark).textTheme,
-      ),
-      useMaterial3: true,
-      scaffoldBackgroundColor: darkColorScheme.background,
-      appBarTheme: AppBarTheme(
-        backgroundColor: darkColorScheme.surface,
-        foregroundColor: darkColorScheme.onSurface,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: true,
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: darkColorScheme.surface,
-        selectedItemColor: darkColorScheme.primary,
-        unselectedItemColor: darkColorScheme.onSurfaceVariant,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: darkColorScheme.surface,
-        indicatorColor: darkColorScheme.secondaryContainer,
-        surfaceTintColor: Colors.transparent,
-        labelTextStyle: MaterialStateProperty.all(
-          TextStyle(color: darkColorScheme.onSurfaceVariant),
-        ),
-      ),
-      bottomAppBarTheme: const BottomAppBarThemeData(
-        color: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-      ),
-    );
+    final appTheme = ref.watch(themeNotifierProvider);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Mentu - Organización Académica',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: themeMode,
+      theme: appTheme.getTheme(),
       routerConfig: appRouter,
     );
   }
