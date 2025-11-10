@@ -1,4 +1,4 @@
-// lib/domain/entities/task_entity.dart
+
 import 'package:flutter/material.dart';
 
 class TaskEntity {
@@ -20,7 +20,7 @@ class TaskEntity {
     this.isCompleted = false,
   });
 
-  // Método para inmutabilidad (usado al cambiar el estado)
+ 
   TaskEntity copyWith({
     String? id,
     String? title,

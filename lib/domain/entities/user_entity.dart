@@ -1,4 +1,4 @@
-// lib/domain/entities/user_entity.dart
+
 
 class UserEntity {
   final String id;
@@ -11,7 +11,7 @@ class UserEntity {
     required this.name,
   });
 
-  // ✅ CORRECCIÓN: Usar una constante estática NO nula para el estado inicial
+  
   static const UserEntity unauthenticated =
       UserEntity(id: '', email: '', name: 'Guest');
 

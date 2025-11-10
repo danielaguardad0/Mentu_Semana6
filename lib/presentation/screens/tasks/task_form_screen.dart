@@ -1,4 +1,4 @@
-// lib/presentation/screens/tasks/task_form_screen.dart
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,12 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mentu_app/domain/entities/task_entity.dart';
 import 'package:mentu_app/presentation/providers/tasks_provider.dart';
 
-// Colores de referencia de la app
+
 const Color primaryColor = Colors.blue;
 const Color cardBackgroundColor = Colors.white;
 
 class TaskFormScreen extends ConsumerStatefulWidget {
-  final TaskEntity? taskToEdit; // La tarea a editar (opcional)
+  final TaskEntity? taskToEdit; 
 
   const TaskFormScreen({super.key, this.taskToEdit});
 
@@ -23,14 +23,14 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Controladores y variables de estado
+  
   late TextEditingController _titleController;
   late TextEditingController _subjectController;
   late String _selectedDueDate;
   late String _selectedDueTime;
   late Color _selectedColor;
 
-  // Opciones predefinidas (simulación de datos para el formulario)
+  
   final List<String> _dueDateOptions = [
     'Today, Monday 17',
     'Thursday 18',
@@ -57,7 +57,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     final isEditing = widget.taskToEdit != null;
     final task = widget.taskToEdit;
 
-    // Inicializar controladores con datos existentes si estamos editando
+    
     _titleController =
         TextEditingController(text: isEditing ? task!.title : '');
     _subjectController =
@@ -83,7 +83,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
     try {
       if (widget.taskToEdit == null) {
-        // --- CREAR TAREA (CREATE) ---
+        
         await notifier.createTask(
           _titleController.text.trim(),
           _subjectController.text.trim(),
@@ -92,7 +92,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         );
         _showSnackbar('Tarea creada exitosamente.', Colors.green);
       } else {
-        // --- EDITAR TAREA (UPDATE) ---
+        
         final updatedTask = widget.taskToEdit!.copyWith(
           title: _titleController.text.trim(),
           subject: _subjectController.text.trim(),
@@ -101,11 +101,11 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
           color: _selectedColor,
         );
         await notifier.updateTask(
-            updatedTask); // Llamada al método updateTask en el Notifier
+            updatedTask); 
         _showSnackbar('Tarea actualizada exitosamente.', Colors.green);
       }
 
-      // Cerrar la pantalla después del éxito
+      
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       _showSnackbar('Error al guardar la tarea: $e', Colors.red);
@@ -146,7 +146,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               _buildSubjectField(),
               const SizedBox(height: 30),
 
-              // Selectores de Fecha, Hora y Color
+              
               Row(
                 children: [
                   Expanded(
@@ -169,7 +169,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               _buildColorPicker(),
               const SizedBox(height: 50),
 
-              // Botón de Guardar
+              
               ElevatedButton(
                 onPressed: _isLoading ? null : _saveTask,
                 style: ElevatedButton.styleFrom(

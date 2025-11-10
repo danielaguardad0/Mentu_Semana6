@@ -6,10 +6,10 @@ import '../../providers/tasks_provider.dart';
 import '../../../domain/entities/task_entity.dart';
 import '../../providers/auth_provider.dart';
 
-const Color primaryColor = Color(0xFF4C7FFF); // Azul Principal
-const Color accentColor = Color(0xFF4CAF50); // Verde Acento
-const Color lightAccentColor = Color(0xFFC7FFCA); // Verde muy claro
-const Color appBackgroundColor = Color(0xFFF0F4F8); // Gris Azulado muy claro
+const Color primaryColor = Color(0xFF4C7FFF); 
+const Color accentColor = Color(0xFF4CAF50); 
+const Color lightAccentColor = Color(0xFFC7FFCA); 
+const Color appBackgroundColor = Color(0xFFF0F4F8); 
 const Color cardBackgroundColor = Colors.white;
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -243,9 +243,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
-// -------------------------------------------------------------------
-// PROGRESS CARD (Corregido el error de tooltipBgColor)
-// -------------------------------------------------------------------
+
 class _ProgressCard extends StatelessWidget {
   final List<BarChartGroupData> barGroups;
   final int selectedPeriod;
@@ -351,8 +349,7 @@ class _ProgressCard extends StatelessWidget {
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(
-                      // ✅ CORRECCIÓN FINAL: Eliminada la línea problemática
-                      // tooltipBackgroundColor: primaryColor.withOpacity(0.8),
+
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
                           '${rod.toY.toInt()}%',
@@ -374,9 +371,7 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
-// -------------------------------------------------------------------
-// SELECTOR DE TIEMPO
-// -------------------------------------------------------------------
+
 class _TimePeriodSelector extends StatelessWidget {
   final int? selectedPeriod;
   final ValueChanged<int>? onPeriodChanged;
@@ -431,9 +426,7 @@ class _TimePeriodSelector extends StatelessWidget {
   }
 }
 
-// -------------------------------------------------------------------
-// TAREA PRÓXIMA
-// -------------------------------------------------------------------
+
 class _TaskEntry extends StatelessWidget {
   final String title;
   final String subject;
@@ -495,9 +488,7 @@ class _TaskEntry extends StatelessWidget {
   }
 }
 
-// -------------------------------------------------------------------
-// NAVEGACIÓN INFERIOR (Mantenida)
-// -------------------------------------------------------------------
+
 Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     currentIndex: currentIndex,

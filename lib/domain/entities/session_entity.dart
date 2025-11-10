@@ -1,4 +1,3 @@
-// lib/domain/entities/session_entity.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,8 +6,7 @@ class SessionEntity {
   final String tutorId;
   final String studentId;
   final DateTime endTime;
-  // Podríamos incluir más detalles como subject, rating, etc.,
-  // pero solo necesitamos el tutorId para esta función.
+  
 
   const SessionEntity({
     required this.id,

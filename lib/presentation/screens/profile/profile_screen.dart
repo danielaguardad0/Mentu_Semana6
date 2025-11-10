@@ -1,23 +1,23 @@
-// lib/presentation/screens/profile/profile_screen.dart
+
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 🎯 NUEVO: Para Riverpod
-import '../../providers/auth_provider.dart'; // 🎯 RUTA CORREGIDA
+import 'package:flutter_riverpod/flutter_riverpod.dart'; 
+import '../../providers/auth_provider.dart'; 
 
-// Definimos los colores para mantener la consistencia del diseño.
-const Color primaryColor = Color(0xFF1E88E5); // Azul principal
+
+const Color primaryColor = Color(0xFF1E88E5); 
 const Color sectionHeaderColor =
-    Color(0xFF616161); // Gris oscuro para los títulos de sección
+    Color(0xFF616161); 
 const Color iconBackgroundColor =
-    Color(0xFFE3F2FD); // Azul muy claro para el fondo de los íconos
+    Color(0xFFE3F2FD); 
 const Color dividerColor =
-    Color(0xFFEEEEEE); // Gris muy claro para los divisores
+    Color(0xFFEEEEEE); 
 
-// 1. Convertimos a ConsumerWidget para poder usar ref
+
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  // Widget auxiliar para construir un ítem de configuración
+  
   Widget _buildSettingItem({
     required IconData icon,
     required String title,
@@ -51,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  // Widget auxiliar para construir un bloque de soporte con cards
+  
   Widget _buildSupportSectionItem({
     required IconData icon,
     required String title,
@@ -104,22 +104,22 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   @override
-  // 2. build recibe WidgetRef ref
+  
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escuchar al usuario actual logueado (Criterio 1)
+    
     final user = ref.watch(authNotifierProvider);
 
-    // Función para manejar el cierre de sesión
+    
     void _handleLogout() async {
-      // Llama al Notifier para cerrar la sesión de Firebase
+      
       await ref.read(authNotifierProvider.notifier).logout();
 
-      // Navegar de vuelta al Onboarding, limpiando el historial
+      
       Navigator.pushNamedAndRemoveUntil(
           context, '/onboarding', (route) => false);
     }
 
-    // Lógica para obtener las iniciales del avatar
+    
     String getInitials(String name) {
       if (name.isEmpty) return '??';
       List<String> parts = name.split(' ');
@@ -148,7 +148,7 @@ class ProfileScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- PROFILE HEADER ---
+            
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -161,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
                         radius: 60,
                         backgroundColor: iconBackgroundColor,
                         child: Text(
-                          // Muestra iniciales del usuario logueado
+                          
                           getInitials(user.name).toUpperCase(),
                           style: const TextStyle(
                               fontSize: 40, color: primaryColor),
@@ -185,14 +185,14 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Muestra el nombre real del usuario de Firebase
+                  
                   Text(
                     user.name,
                     style: const TextStyle(
                         fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  // Muestra el email real del usuario de Firebase
+                  
                   Text(
                     user.email,
                     style: TextStyle(fontSize: 15, color: Colors.grey[600]),
@@ -202,7 +202,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- ACCOUNT SECTION ---
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -256,7 +256,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- LOGOUT BUTTON (NUEVO) ---
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: OutlinedButton.icon(
@@ -274,7 +274,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- SUPPORT SECTION ---
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -338,7 +338,7 @@ class ProfileScreen extends ConsumerWidget {
           ],
         ),
       ),
-      // --- B O T T O M N A V I G A T I O N ---
+      
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
         selectedItemColor: primaryColor,

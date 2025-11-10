@@ -1,18 +1,18 @@
-// lib/presentation/screens/tasks/tasks_screen.dart
+
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mentu_app/presentation/providers/tasks_provider.dart';
 import 'package:mentu_app/domain/entities/task_entity.dart';
-import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart'; // Importar el formulario
+import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart'; 
 
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
 const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 
-// ✅ CAMBIO 1: Convertido a ConsumerStatefulWidget
+
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
 
@@ -20,12 +20,12 @@ class TasksScreen extends ConsumerStatefulWidget {
   ConsumerState<TasksScreen> createState() => _TasksScreenState();
 }
 
-// ✅ CAMBIO 2: Convertido a ConsumerState
+
 class _TasksScreenState extends ConsumerState<TasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // 🛑 ELIMINADA la lista 'allTasks' codificada
+  
 
   @override
   void initState() {
@@ -39,17 +39,17 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     super.dispose();
   }
 
-  // 💡 Métodos CRUD y de navegación
+  
 
   void _toggleTaskStatus(TaskEntity task) {
     ref.read(tasksNotifierProvider.notifier).toggleStatus(task.id);
   }
 
   void _editTask(TaskEntity task) {
-    // ✅ CORRECCIÓN: Abre el formulario para editar
+    
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => TaskFormScreen(taskToEdit: task), // Pasa la tarea
+        builder: (context) => TaskFormScreen(taskToEdit: task), 
       ),
     );
   }
@@ -58,17 +58,17 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
   }
 
-  // ✅ CORRECCIÓN CRÍTICA: La navegación al formulario es la única responsabilidad de este método.
+  
   void _handleNewTask() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        // taskToEdit es null, indica que es una nueva tarea
+        
         builder: (context) => const TaskFormScreen(),
       ),
     );
   }
 
-  // Modificado para usar TaskEntity
+  
   List<TaskEntity> _getFilteredTasks(int index, List<TaskEntity> allTasks) {
     if (index == 2) {
       return allTasks.where((task) => task.isCompleted).toList();
@@ -77,7 +77,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     }
   }
 
-  // Modificado para usar TaskEntity
+  
   Map<String, List<TaskEntity>> _groupTasksByDate(List<TaskEntity> tasks) {
     final Map<String, List<TaskEntity>> grouped = {};
     for (var task in tasks) {
@@ -90,7 +90,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     return grouped;
   }
 
-  // ✅ MÉTODO REINCORPORADO: AppBar
+  
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: cardBackgroundColor,
@@ -105,7 +105,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  // ✅ MÉTODO REINCORPORADO: TabBar
+  
   Widget _buildTabBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -147,7 +147,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  // ✅ MÉTODO REINCORPORADO: BottomNavigationBar
+  
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Material(
       elevation: 10,
@@ -193,7 +193,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
 
   @override
   Widget build(BuildContext context) {
-    // 💡 Leer el estado de la lista de tareas desde el Notifier
+    
     final allTasks = ref.watch(tasksNotifierProvider);
 
     return Scaffold(
@@ -206,16 +206,16 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildTaskList(_getFilteredTasks(0, allTasks)), // To Do
-                _buildTaskList(_getFilteredTasks(1, allTasks)), // In Progress
-                _buildTaskList(_getFilteredTasks(2, allTasks)), // Completed
+                _buildTaskList(_getFilteredTasks(0, allTasks)), 
+                _buildTaskList(_getFilteredTasks(1, allTasks)), 
+                _buildTaskList(_getFilteredTasks(2, allTasks)), 
               ],
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleNewTask, // ✅ Ahora abre el formulario
+        onPressed: _handleNewTask, 
         icon: const Icon(Icons.add_rounded, size: 28),
         label: Text("New Task",
             style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
@@ -228,7 +228,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  // Modificado _buildTaskList para usar TaskEntity
+  
   Widget _buildTaskList(List<TaskEntity> tasks) {
     if (tasks.isEmpty) {
       final String emptyMessage = _tabController.index == 2
@@ -267,7 +267,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
                     color: primaryColor.withOpacity(0.8)),
               ),
             ),
-            // Asegurarse de que _TaskCard también use TaskEntity
+            
             ...tasksForDate.map((task) => _TaskCard(
                   task: task,
                   onToggleStatus: () => _toggleTaskStatus(task),
@@ -281,10 +281,10 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
   }
 }
 
-// WIDGET TaskCard (modificado para usar TaskEntity)
+
 
 class _TaskCard extends StatelessWidget {
-  final TaskEntity task; // 💡 Usar TaskEntity
+  final TaskEntity task; 
   final VoidCallback onToggleStatus;
   final VoidCallback onEdit;
   final VoidCallback onDelete;

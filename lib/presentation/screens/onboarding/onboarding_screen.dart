@@ -19,7 +19,7 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 30),
 
-                // 🔹 Logo
+                
                 Hero(
                   tag: 'mentu_logo',
                   child: Image.asset(
@@ -36,7 +36,7 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                // 🔹 Eslogan
+                
                 Text(
                   "Tu camino hacia el éxito académico 💡",
                   textAlign: TextAlign.center,
@@ -49,7 +49,7 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 50),
 
-                // 🔹 Botón Login
+                
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
@@ -75,14 +75,14 @@ class OnboardingScreen extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // 🔹 Botón Sign Up
+                
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut,
                     child: OutlinedButton(
-                      // 🎯 RUTA CORREGIDA: Apunta al nuevo /signup
+                      
                       onPressed: () => Navigator.pushNamed(context, '/signup'),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 55),

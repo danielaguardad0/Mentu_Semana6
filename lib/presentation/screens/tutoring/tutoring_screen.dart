@@ -1,10 +1,10 @@
-// lib/presentation/screens/tutoring/tutoring_screen.dart
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Importar la entidad y el proveedor
+
 import 'package:mentu_app/domain/entities/tutor_entity.dart';
 import 'package:mentu_app/presentation/providers/tutor_provider.dart';
 
@@ -57,7 +57,7 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
     return tutors.map((t) => t.subject).toSet().toList();
   }
 
-  // --- WIDGETS DE CONSTRUCCIÓN ---
+  
 
   Widget _buildHeader(BuildContext context) {
     return Column(
@@ -81,7 +81,7 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
           ),
         ),
 
-        // Barra de búsqueda
+        
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           margin: const EdgeInsets.only(bottom: 20),
@@ -183,7 +183,7 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
         ),
         const SizedBox(height: 15),
 
-        // Lista Horizontal de Categorías
+        
         SizedBox(
           height: 120,
           child: ListView.builder(
@@ -273,10 +273,10 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
     );
   }
 
-  // ✅ CORRECCIÓN CRÍTICA: Se modificó para observar bookAgainTutorsProvider
+  
   Widget _buildBookAgainSection() {
     final tutorsAsync =
-        ref.watch(bookAgainTutorsProvider); // Watch the Book Again Provider
+        ref.watch(bookAgainTutorsProvider); 
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,7 +304,7 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
         ),
         const SizedBox(height: 15),
 
-        // ✅ Manejo del estado asíncrono para Book Again
+        
         tutorsAsync.when(
           loading: () => const Center(
               child: Padding(
@@ -449,7 +449,7 @@ class _TutoringScreenState extends ConsumerState<TutoringScreen> {
   }
 }
 
-// WIDGETS AUXILIARES
+
 
 Widget _buildRatingStars(double rating, {bool showReviews = true}) {
   int fullStars = rating.floor();
@@ -481,7 +481,7 @@ Widget _buildRatingStars(double rating, {bool showReviews = true}) {
   );
 }
 
-// Tarjeta de Categoría
+
 class _CategoryCard extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -547,7 +547,7 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
-// Tarjeta de Tutor
+
 class _TopTutorItem extends StatelessWidget {
   final TutorEntity tutor;
 
@@ -610,7 +610,7 @@ class _TopTutorItem extends StatelessWidget {
   }
 }
 
-// Tarjeta de "Book Again"
+
 class _BookAgainCard extends StatelessWidget {
   final TutorEntity tutor;
 

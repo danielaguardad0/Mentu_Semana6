@@ -12,21 +12,21 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # 🎯 FIREBASE AUTENTICACIÓN (NUEVO)
-  firebase_core: ^2.24.2 # Versión reciente
-  firebase_auth: ^4.15.2 # Versión reciente
+  
+  firebase_core: ^2.24.2 
+  firebase_auth: ^4.15.2 
 
-  # State Management
-  flutter_riverpod: ^2.5.1 # Versión actualizada
+  
+  flutter_riverpod: ^2.5.1 
 
-  # CONEXIÓN BACKEND (Para futuras Tareas/API propia)
+  
   dio: ^5.4.1
 
-  # UI Components
+  
   cupertino_icons: ^1.0.8
   google_fonts: ^6.1.0
 
-  # Charts and Calendar
+  
   table_calendar: ^3.0.9
   fl_chart: ^1.1.1
   cloud_firestore: ^4.17.5
