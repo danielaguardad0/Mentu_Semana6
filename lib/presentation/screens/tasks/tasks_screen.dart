@@ -1,80 +1,31 @@
+// lib/presentation/screens/tasks/tasks_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mentu_app/presentation/providers/tasks_provider.dart';
+import 'package:mentu_app/domain/entities/task_entity.dart';
+import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart'; // Importar el formulario
 
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
 const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 
-class Task {
-  final String id;
-  final String title;
-  final String subject;
-  final String dueTime;
-  final String dueDate;
-  final Color color;
-  bool isCompleted;
-
-  Task({
-    required this.id,
-    required this.title,
-    required this.subject,
-    required this.dueTime,
-    required this.dueDate,
-    this.color = primaryColor,
-    this.isCompleted = false,
-  });
-}
-
-class TasksScreen extends StatefulWidget {
+// ✅ CAMBIO 1: Convertido a ConsumerStatefulWidget
+class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
 
   @override
-  State<TasksScreen> createState() => _TasksScreenState();
+  ConsumerState<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends State<TasksScreen>
+// ✅ CAMBIO 2: Convertido a ConsumerState
+class _TasksScreenState extends ConsumerState<TasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  List<Task> allTasks = [
-    Task(
-        id: '1',
-        title: "Crear una historia emocional única",
-        subject: "Literatura",
-        dueTime: "11:30 AM",
-        dueDate: "Today, Monday 17",
-        color: Colors.pinkAccent),
-    Task(
-        id: '2',
-        title: "Resumen de la Parábola de la Cueva",
-        subject: "Filosofía",
-        dueTime: "2:00 PM",
-        dueDate: "Today, Monday 17",
-        color: primaryColor),
-    Task(
-        id: '3',
-        title: "Problemas de integración y derivadas",
-        subject: "Cálculo",
-        dueTime: "11:30 AM",
-        dueDate: "Thursday 18",
-        color: accentColor),
-    Task(
-        id: '4',
-        title: "Investigación sobre Genética",
-        subject: "Biología",
-        dueTime: "4:00 PM",
-        dueDate: "Friday 19",
-        color: Colors.orange),
-    Task(
-        id: '5',
-        title: "Ensayo sobre la Primera Guerra Mundial",
-        subject: "Historia",
-        dueTime: "2:00 PM",
-        dueDate: "Completed",
-        color: Colors.purple,
-        isCompleted: true),
-  ];
+  // 🛑 ELIMINADA la lista 'allTasks' codificada
 
   @override
   void initState() {
@@ -88,26 +39,37 @@ class _TasksScreenState extends State<TasksScreen>
     super.dispose();
   }
 
-  void _toggleTaskStatus(Task task) {
-    setState(() {
-      final index = allTasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) {
-        allTasks[index].isCompleted = !allTasks[index].isCompleted;
-      }
-    });
+  // 💡 Métodos CRUD y de navegación
+
+  void _toggleTaskStatus(TaskEntity task) {
+    ref.read(tasksNotifierProvider.notifier).toggleStatus(task.id);
   }
 
-  void _editTask(Task task) {
-    print('Editing task: ${task.title}');
+  void _editTask(TaskEntity task) {
+    // ✅ CORRECCIÓN: Abre el formulario para editar
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TaskFormScreen(taskToEdit: task), // Pasa la tarea
+      ),
+    );
   }
 
-  void _deleteTask(Task task) {
-    setState(() {
-      allTasks.removeWhere((t) => t.id == task.id);
-    });
+  void _deleteTask(TaskEntity task) {
+    ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
   }
 
-  List<Task> _getFilteredTasks(int index) {
+  // ✅ CORRECCIÓN CRÍTICA: La navegación al formulario es la única responsabilidad de este método.
+  void _handleNewTask() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        // taskToEdit es null, indica que es una nueva tarea
+        builder: (context) => const TaskFormScreen(),
+      ),
+    );
+  }
+
+  // Modificado para usar TaskEntity
+  List<TaskEntity> _getFilteredTasks(int index, List<TaskEntity> allTasks) {
     if (index == 2) {
       return allTasks.where((task) => task.isCompleted).toList();
     } else {
@@ -115,8 +77,9 @@ class _TasksScreenState extends State<TasksScreen>
     }
   }
 
-  Map<String, List<Task>> _groupTasksByDate(List<Task> tasks) {
-    final Map<String, List<Task>> grouped = {};
+  // Modificado para usar TaskEntity
+  Map<String, List<TaskEntity>> _groupTasksByDate(List<TaskEntity> tasks) {
+    final Map<String, List<TaskEntity>> grouped = {};
     for (var task in tasks) {
       final key = task.isCompleted ? 'Completed' : task.dueDate;
       if (!grouped.containsKey(key)) {
@@ -127,42 +90,7 @@ class _TasksScreenState extends State<TasksScreen>
     return grouped;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: cardBackgroundColor,
-      appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTaskList(_getFilteredTasks(0)), // To Do
-                _buildTaskList(_getFilteredTasks(1)), // In Progress
-                _buildTaskList(_getFilteredTasks(2)), // Completed
-              ],
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add_rounded, size: 28),
-        label: Text("New Task",
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      bottomNavigationBar: _buildBottomNavigationBar(context, 1),
-    );
-  }
-
-  // WIDGETS DE CONSTRUCCIÓN
-
+  // ✅ MÉTODO REINCORPORADO: AppBar
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: cardBackgroundColor,
@@ -177,6 +105,7 @@ class _TasksScreenState extends State<TasksScreen>
     );
   }
 
+  // ✅ MÉTODO REINCORPORADO: TabBar
   Widget _buildTabBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -198,12 +127,11 @@ class _TasksScreenState extends State<TasksScreen>
               color: primaryColor,
             ),
             indicatorSize: TabBarIndicatorSize.tab,
-            indicatorColor: Colors.transparent, // elimina línea
-            indicatorWeight: 0, // asegura que no se dibuje
-            dividerColor: Colors.transparent, // 🔥 elimina divisor por defecto
-            overlayColor: WidgetStateProperty.all(
-                Colors.transparent), // 🔥 elimina resaltado
-            splashFactory: NoSplash.splashFactory, // 🔥 sin efecto splash
+            indicatorColor: Colors.transparent,
+            indicatorWeight: 0,
+            dividerColor: Colors.transparent,
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            splashFactory: NoSplash.splashFactory,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.black54,
             labelStyle:
@@ -219,56 +147,7 @@ class _TasksScreenState extends State<TasksScreen>
     );
   }
 
-  Widget _buildTaskList(List<Task> tasks) {
-    if (tasks.isEmpty) {
-      final String emptyMessage = _tabController.index == 2
-          ? '¡Todas tus tareas están completas!'
-          : 'No tienes tareas pendientes.';
-      return Center(
-        child: Text(
-          emptyMessage,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(fontSize: 18, color: Colors.grey.shade500),
-        ),
-      );
-    }
-
-    final groupedTasks = _groupTasksByDate(tasks);
-    final sortedDates = groupedTasks.keys.toList();
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 100, top: 10),
-      itemCount: sortedDates.length,
-      itemBuilder: (context, dateIndex) {
-        final date = sortedDates[dateIndex];
-        final tasksForDate = groupedTasks[date]!;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, top: 12, bottom: 8),
-              child: Text(
-                date,
-                style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: primaryColor.withOpacity(0.8)),
-              ),
-            ),
-            ...tasksForDate.map((task) => _TaskCard(
-                  task: task,
-                  onToggleStatus: () => _toggleTaskStatus(task),
-                  onEdit: () => _editTask(task),
-                  onDelete: () => _deleteTask(task),
-                )),
-          ],
-        );
-      },
-    );
-  }
-
+  // ✅ MÉTODO REINCORPORADO: BottomNavigationBar
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Material(
       elevation: 10,
@@ -311,12 +190,101 @@ class _TasksScreenState extends State<TasksScreen>
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    // 💡 Leer el estado de la lista de tareas desde el Notifier
+    final allTasks = ref.watch(tasksNotifierProvider);
+
+    return Scaffold(
+      backgroundColor: cardBackgroundColor,
+      appBar: _buildAppBar(context),
+      body: Column(
+        children: [
+          _buildTabBar(),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTaskList(_getFilteredTasks(0, allTasks)), // To Do
+                _buildTaskList(_getFilteredTasks(1, allTasks)), // In Progress
+                _buildTaskList(_getFilteredTasks(2, allTasks)), // Completed
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _handleNewTask, // ✅ Ahora abre el formulario
+        icon: const Icon(Icons.add_rounded, size: 28),
+        label: Text("New Task",
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      bottomNavigationBar: _buildBottomNavigationBar(context, 1),
+    );
+  }
+
+  // Modificado _buildTaskList para usar TaskEntity
+  Widget _buildTaskList(List<TaskEntity> tasks) {
+    if (tasks.isEmpty) {
+      final String emptyMessage = _tabController.index == 2
+          ? '¡Todas tus tareas están completas!'
+          : 'No tienes tareas pendientes.';
+      return Center(
+        child: Text(
+          emptyMessage,
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(fontSize: 18, color: Colors.grey.shade500),
+        ),
+      );
+    }
+
+    final groupedTasks = _groupTasksByDate(tasks);
+    final sortedDates = groupedTasks.keys.toList();
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 100, top: 10),
+      itemCount: sortedDates.length,
+      itemBuilder: (context, dateIndex) {
+        final date = sortedDates[dateIndex];
+        final tasksForDate = groupedTasks[date]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 16, right: 16, top: 12, bottom: 8),
+              child: Text(
+                date,
+                style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: primaryColor.withOpacity(0.8)),
+              ),
+            ),
+            // Asegurarse de que _TaskCard también use TaskEntity
+            ...tasksForDate.map((task) => _TaskCard(
+                  task: task,
+                  onToggleStatus: () => _toggleTaskStatus(task),
+                  onEdit: () => _editTask(task),
+                  onDelete: () => _deleteTask(task),
+                )),
+          ],
+        );
+      },
+    );
+  }
 }
 
-// WIDGET Taskcard
+// WIDGET TaskCard (modificado para usar TaskEntity)
 
 class _TaskCard extends StatelessWidget {
-  final Task task;
+  final TaskEntity task; // 💡 Usar TaskEntity
   final VoidCallback onToggleStatus;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
