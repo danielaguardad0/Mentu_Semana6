@@ -1,92 +1,181 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/tasks_provider.dart';
+import '../../../domain/entities/task_entity.dart';
+import '../../providers/auth_provider.dart';
 
-const Color primaryColor = Colors.blue;
-const Color accentColor = Color(0xFF4CAF50);
-const Color appBackgroundColor = Color(0xFFD2EBE8);
+const Color primaryColor = Color(0xFF4C7FFF); // Azul Principal
+const Color accentColor = Color(0xFF4CAF50); // Verde Acento
+const Color lightAccentColor = Color(0xFFC7FFCA); // Verde muy claro
+const Color appBackgroundColor = Color(0xFFF0F4F8); // Gris Azulado muy claro
 const Color cardBackgroundColor = Colors.white;
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
-  // 0 = Diario, 1 = Semanal, 2 = Mensual
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   int _selectedPeriod = 1;
+
+  Map<String, int> _calculateProgress(List<TaskEntity> tasks) {
+    if (tasks.isEmpty) return {};
+
+    final Map<String, int> completedCounts = {};
+    final Map<String, int> totalCounts = {};
+    final Map<String, int> progressPercentages = {};
+
+    for (var task in tasks) {
+      totalCounts.update(task.subject, (count) => count + 1, ifAbsent: () => 1);
+      if (task.isCompleted) {
+        completedCounts.update(task.subject, (count) => count + 1,
+            ifAbsent: () => 1);
+      }
+    }
+
+    totalCounts.forEach((subject, total) {
+      final completed = completedCounts[subject] ?? 0;
+      final progress = (completed * 100) ~/ total;
+      progressPercentages[subject] = progress.clamp(0, 100);
+    });
+
+    return progressPercentages;
+  }
+
+  List<TaskEntity> _getUpcomingTasks(List<TaskEntity> tasks) {
+    final pendingTasks = tasks.where((t) => !t.isCompleted).toList();
+    return pendingTasks.take(4).toList();
+  }
+
+  BarChartGroupData _makeBarData(int x, int baseValue, int period) {
+    int adjustedValue = baseValue;
+
+    if (period == 0) {
+      adjustedValue = (baseValue + (x % 2 == 0 ? 5 : -5)).clamp(10, 100);
+    } else if (period == 2) {
+      adjustedValue = (baseValue + 5).clamp(10, 100);
+    }
+
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: adjustedValue.toDouble(),
+          color: accentColor,
+          width: 15,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(5),
+            topRight: Radius.circular(5),
+          ),
+          backDrawRodData: BackgroundBarChartRodData(
+            show: true,
+            toY: 100,
+            color: lightAccentColor.withOpacity(0.5),
+          ),
+        ),
+      ],
+      showingTooltipIndicators: const [0],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, int> baseProgress = {
-      'Biología': 75,
-      'Química': 85,
-      'Física': 60,
-      'Literatura': 90,
-      'Historia': 50,
-    };
+    final AsyncValue<List<TaskEntity>> tasksAsync =
+        ref.watch(tasksFutureProvider);
+    final user = ref.watch(authNotifierProvider);
 
-    final List<BarChartGroupData> barGroups =
-        baseProgress.entries.toList().asMap().entries.map((entry) {
-      final int index = entry.key;
-      final String subject = entry.value.key;
-      final int baseValue = entry.value.value;
-      return _makeBarData(index, baseValue, subject, _selectedPeriod);
-    }).toList();
+    final List<BarChartGroupData> barGroups = [];
+    final List<String> subjectAbbreviations = [];
+
+    tasksAsync.whenData((tasks) {
+      final progressMap = _calculateProgress(tasks);
+
+      progressMap.entries.toList().asMap().entries.forEach((entry) {
+        final int index = entry.key;
+        final String subject = entry.value.key;
+        final int progressValue = entry.value.value;
+
+        subjectAbbreviations
+            .add(subject.substring(0, subject.length > 4 ? 4 : subject.length));
+
+        barGroups.add(_makeBarData(index, progressValue, _selectedPeriod));
+      });
+    });
 
     return Scaffold(
-      backgroundColor: appBackgroundColor, // ✅ usamos el nombre corregido
+      backgroundColor: appBackgroundColor,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           children: [
-            _buildHeader(context),
+            _buildHeader(context, user.name),
             const SizedBox(height: 30),
             _buildSectionTitle('Progreso'),
             const SizedBox(height: 15),
-            _ProgressCard(
-              barGroups: barGroups,
-              selectedPeriod: _selectedPeriod,
-              onPeriodChanged: (int newPeriod) {
-                setState(() {
-                  _selectedPeriod = newPeriod;
-                });
-              },
-            ),
+            tasksAsync.when(
+                loading: () => const Center(
+                    child: CircularProgressIndicator(color: primaryColor)),
+                error: (err, stack) =>
+                    Center(child: Text('Error al cargar progreso: $err')),
+                data: (_) {
+                  return _ProgressCard(
+                    barGroups: barGroups,
+                    selectedPeriod: _selectedPeriod,
+                    subjectAbbreviations: subjectAbbreviations,
+                    onPeriodChanged: (int newPeriod) {
+                      setState(() {
+                        _selectedPeriod = newPeriod;
+                      });
+                    },
+                  );
+                }),
             const SizedBox(height: 30),
             _buildSectionTitle('Tareas Próximas'),
             const SizedBox(height: 15),
-            const _TaskEntry(
-              title: "Informe Laboratorio 3",
-              subject: "Química",
-              dueDate: "Mañana",
-              color: accentColor,
-              icon: Icons.local_fire_department,
-            ),
-            const _TaskEntry(
-              title: "Ensayo: Guerra Civil",
-              subject: "Historia",
-              dueDate: "Martes",
-              color: primaryColor,
-              icon: Icons.assignment_outlined,
-            ),
-            const _TaskEntry(
-              title: "Cuestionario Cap. 5",
-              subject: "Biología",
-              dueDate: "Miércoles",
-              color: Colors.pinkAccent,
-              icon: Icons.checklist,
-            ),
+            tasksAsync.when(
+                loading: () => const Center(
+                    child: CircularProgressIndicator(color: primaryColor)),
+                error: (err, stack) => Center(
+                    child: Text('Error al cargar tareas próximas: $err')),
+                data: (tasks) {
+                  final upcomingTasks = _getUpcomingTasks(tasks);
+
+                  if (upcomingTasks.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text("¡No tienes tareas pendientes! 🎉",
+                            style: GoogleFonts.inter(
+                                color: accentColor, fontSize: 16)),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: upcomingTasks
+                        .map((task) => _TaskEntry(
+                              title: task.title,
+                              subject: task.subject,
+                              dueDate: task.dueDate,
+                              color: task.color,
+                              icon: Icons.assignment_outlined,
+                            ))
+                        .toList(),
+                  );
+                }),
             const SizedBox(height: 20),
             Center(
               child: TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/tasks'),
                 child: Text(
-                  'Ver más tareas',
-                  style: GoogleFonts.lobster(
+                  'Ver todas las tareas',
+                  style: GoogleFonts.inter(
                     fontSize: 18,
+                    fontWeight: FontWeight.w600,
                     color: primaryColor.withOpacity(0.8),
                   ),
                 ),
@@ -95,12 +184,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-
       bottomNavigationBar: _buildBottomNavigationBar(context, 0),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String userName) {
+    final displayUserName = userName.split(' ').first;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -108,8 +198,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundColor: primaryColor.withOpacity(0.1),
-              child: const Icon(Icons.person, color: primaryColor, size: 30),
+              backgroundColor: primaryColor,
+              child: const Icon(Icons.person, color: Colors.white, size: 30),
             ),
             const SizedBox(width: 15),
             Column(
@@ -120,10 +210,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
                 ),
                 Text(
-                  "Estudiante Mentu",
-                  style: GoogleFonts.lobster(
+                  displayUserName.isEmpty
+                      ? "Estudiante Mentu"
+                      : displayUserName,
+                  style: GoogleFonts.inter(
                     fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     color: Colors.black87,
                   ),
                 ),
@@ -149,55 +241,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  BarChartGroupData _makeBarData(
-      int x, int baseValue, String label, int period) {
-    int adjustedValue = baseValue;
-    if (period == 0) {
-      adjustedValue = (baseValue + (x % 2 == 0 ? 10 : -10)).clamp(10, 100);
-    } else if (period == 2) {
-      adjustedValue = (baseValue + 10).clamp(10, 100);
-    }
-
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: adjustedValue.toDouble(),
-          color: accentColor,
-          width: 15,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(5),
-            topRight: Radius.circular(5),
-          ),
-          backDrawRodData: BackgroundBarChartRodData(
-            show: true,
-            toY: 100,
-            color: Colors.grey.shade200,
-          ),
-        ),
-      ],
-      showingTooltipIndicators: const [0],
-    );
-  }
 }
 
 // -------------------------------------------------------------------
-// PROGRESS CARD
+// PROGRESS CARD (Corregido el error de tooltipBgColor)
 // -------------------------------------------------------------------
 class _ProgressCard extends StatelessWidget {
   final List<BarChartGroupData> barGroups;
   final int selectedPeriod;
+  final List<String> subjectAbbreviations;
   final ValueChanged<int> onPeriodChanged;
 
   const _ProgressCard({
     required this.barGroups,
     required this.selectedPeriod,
+    required this.subjectAbbreviations,
     required this.onPeriodChanged,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (barGroups.isEmpty) {
+      return Card(
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        color: cardBackgroundColor,
+        child: const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(
+                child: Text(
+                    "¡Completa tus primeras tareas para ver tu progreso!"))),
+      );
+    }
+
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -229,19 +305,14 @@ class _ProgressCard extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final List<String> titles = [
-                            'Bio',
-                            'Quí',
-                            'Fís',
-                            'Lit',
-                            'Hist'
-                          ];
+                          final List<String> titles = subjectAbbreviations;
+
                           if (value.toInt() < titles.length) {
                             return Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
                                 titles[value.toInt()],
-                                style: const TextStyle(
+                                style: GoogleFonts.inter(
                                     fontSize: 10, color: Colors.black54),
                               ),
                             );
@@ -258,7 +329,7 @@ class _ProgressCard extends StatelessWidget {
                           if (value == 0 || value == 50 || value == 100) {
                             return Text(
                               '${value.toInt()}%',
-                              style: const TextStyle(
+                              style: GoogleFonts.inter(
                                   fontSize: 10, color: Colors.black54),
                             );
                           }
@@ -280,6 +351,8 @@ class _ProgressCard extends StatelessWidget {
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(
+                      // ✅ CORRECCIÓN FINAL: Eliminada la línea problemática
+                      // tooltipBackgroundColor: primaryColor.withOpacity(0.8),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
                           '${rod.toY.toInt()}%',
@@ -305,8 +378,8 @@ class _ProgressCard extends StatelessWidget {
 // SELECTOR DE TIEMPO
 // -------------------------------------------------------------------
 class _TimePeriodSelector extends StatelessWidget {
-  final int selectedPeriod;
-  final ValueChanged<int> onPeriodChanged;
+  final int? selectedPeriod;
+  final ValueChanged<int>? onPeriodChanged;
 
   const _TimePeriodSelector({
     required this.selectedPeriod,
@@ -329,7 +402,9 @@ class _TimePeriodSelector extends StatelessWidget {
           final bool isSelected = index == selectedPeriod;
           return Expanded(
             child: GestureDetector(
-              onTap: () => onPeriodChanged(index),
+              onTap: onPeriodChanged != null
+                  ? () => onPeriodChanged!(index)
+                  : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -421,17 +496,17 @@ class _TaskEntry extends StatelessWidget {
 }
 
 // -------------------------------------------------------------------
-// NAVEGACIÓN INFERIOR
+// NAVEGACIÓN INFERIOR (Mantenida)
 // -------------------------------------------------------------------
 Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     currentIndex: currentIndex,
     selectedItemColor: primaryColor,
     unselectedItemColor: Colors.grey.shade700,
-    backgroundColor: appBackgroundColor, // ✅ Cambiado para mejor visibilidad
+    backgroundColor: appBackgroundColor,
     type: BottomNavigationBarType.fixed,
     showUnselectedLabels: true,
-    elevation: 8, // ✅ Le da relieve y sombra
+    elevation: 8,
     onTap: (int i) {
       if (i == 0) Navigator.pushReplacementNamed(context, '/dashboard');
       if (i == 1) Navigator.pushReplacementNamed(context, '/tasks');

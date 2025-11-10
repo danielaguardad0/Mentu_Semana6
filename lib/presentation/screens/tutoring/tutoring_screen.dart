@@ -1,5 +1,12 @@
+// lib/presentation/screens/tutoring/tutoring_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Importar la entidad y el proveedor
+import 'package:mentu_app/domain/entities/tutor_entity.dart';
+import 'package:mentu_app/presentation/providers/tutor_provider.dart';
 
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
@@ -7,106 +14,50 @@ const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
 const Color starColor = Colors.amber;
 
-// MODIFICACIÓN 1: Agregar profileImageUrl al modelo Tutor
-class Tutor {
-  final String name;
-  final String subject;
-  final double rating;
-  final int reviews;
-  final String? profileImageUrl; // NUEVA PROPIEDAD
-
-  Tutor({
-    required this.name,
-    required this.subject,
-    required this.rating,
-    this.reviews = 0,
-    this.profileImageUrl, // AGREGAR AL CONSTRUCTOR
-  });
-}
-
-class TutoringScreen extends StatefulWidget {
+class TutoringScreen extends ConsumerStatefulWidget {
   const TutoringScreen({super.key});
 
   @override
-  State<TutoringScreen> createState() => _TutoringScreenState();
+  ConsumerState<TutoringScreen> createState() => _TutoringScreenState();
 }
 
-class _TutoringScreenState extends State<TutoringScreen> {
+class _TutoringScreenState extends ConsumerState<TutoringScreen> {
   int _selectedTab = 0;
   String _searchText = "";
+  String? _selectedCategory;
 
-  final List<String> categories = const [
-    "Science",
-    "Math",
-    "Languages",
-    "History",
-    "Art"
-  ];
+  List<TutorEntity> _filterTutors(List<TutorEntity> tutors) {
+    var filteredTutors = tutors;
 
-  // MODIFICACIÓN 2: Asignar URLs de imagen (usando picsum.photos para mayor compatibilidad)
-  final List<Tutor> allTopTutors = [
-    Tutor(
-        name: "Mary Smith",
-        subject: "Mathematics",
-        rating: 4.9,
-        reviews: 150,
-        profileImageUrl: "https://picsum.photos/id/11/200/200"),
-    Tutor(
-        name: "John Doe",
-        subject: "Science",
-        rating: 4.7,
-        reviews: 92,
-        profileImageUrl: "https://picsum.photos/id/20/200/200"),
-    Tutor(
-        name: "Elisa R.",
-        subject: "History",
-        rating: 4.8,
-        reviews: 55,
-        profileImageUrl: "https://picsum.photos/id/26/200/200"),
-    Tutor(
-        name: "Ana P.",
-        subject: "Physics",
-        rating: 4.5,
-        reviews: 70,
-        profileImageUrl: "https://picsum.photos/id/35/200/200"),
-    Tutor(
-        name: "Carlos M.",
-        subject: "Calculus",
-        rating: 5.0,
-        reviews: 200,
-        profileImageUrl: "https://picsum.photos/id/40/200/200"),
-  ];
-
-  final List<Tutor> bookAgainTutors = [
-    Tutor(
-        name: "Robert J.",
-        subject: "Physics",
-        rating: 4.5,
-        profileImageUrl: "https://picsum.photos/id/51/200/200"),
-    Tutor(
-        name: "Laura K.",
-        subject: "English",
-        rating: 5.0,
-        profileImageUrl: "https://picsum.photos/id/55/200/200"),
-    Tutor(
-        name: "Peter P.",
-        subject: "Chemistry",
-        rating: 4.6,
-        profileImageUrl: "https://picsum.photos/id/60/200/200"),
-  ];
-
-  List<Tutor> get _filteredTopTutors {
-    if (_searchText.isEmpty) {
-      return allTopTutors;
+    if (_searchText.isNotEmpty) {
+      filteredTutors = filteredTutors
+          .where((tutor) =>
+              tutor.name.toLowerCase().contains(_searchText.toLowerCase()) ||
+              tutor.subject.toLowerCase().contains(_searchText.toLowerCase()))
+          .toList();
     }
-    return allTopTutors
-        .where((tutor) =>
-            tutor.name.toLowerCase().contains(_searchText.toLowerCase()) ||
-            tutor.subject.toLowerCase().contains(_searchText.toLowerCase()))
-        .toList();
+
+    if (_selectedCategory != null) {
+      filteredTutors = filteredTutors
+          .where((tutor) => tutor.subject == _selectedCategory)
+          .toList();
+    }
+
+    return filteredTutors;
   }
 
-  // --- WIDGETS DE CONSTRUCCIÓN (Categories / Book Again) ---
+  void _resetFilters() {
+    setState(() {
+      _searchText = "";
+      _selectedCategory = null;
+    });
+  }
+
+  List<String> _getUniqueSubjects(List<TutorEntity> tutors) {
+    return tutors.map((t) => t.subject).toSet().toList();
+  }
+
+  // --- WIDGETS DE CONSTRUCCIÓN ---
 
   Widget _buildHeader(BuildContext context) {
     return Column(
@@ -136,7 +87,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
           margin: const EdgeInsets.only(bottom: 20),
           child: Container(
             decoration: BoxDecoration(
-              // CORRECCIÓN: Reemplazo de withOpacity(0.5) por withAlpha(127)
               color: backgroundColor.withAlpha(127),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: Colors.grey.shade200),
@@ -145,6 +95,7 @@ class _TutoringScreenState extends State<TutoringScreen> {
               onChanged: (value) {
                 setState(() {
                   _searchText = value;
+                  _selectedCategory = null;
                 });
               },
               decoration: InputDecoration(
@@ -170,7 +121,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
     );
   }
 
-  // Widget para barra superior
   Widget _buildHeaderTab(BuildContext context, String title, bool isSelected) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -182,7 +132,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
         boxShadow: isSelected
             ? [
                 BoxShadow(
-                  // CORRECCIÓN: Reemplazo de withOpacity(0.1) por withAlpha(25)
                   color: Colors.grey.withAlpha(25),
                   spreadRadius: 1,
                   blurRadius: 3,
@@ -203,7 +152,9 @@ class _TutoringScreenState extends State<TutoringScreen> {
     );
   }
 
-  Widget _buildCategoriesSection() {
+  Widget _buildCategoriesSection(List<TutorEntity> tutors) {
+    final dynamicCategories = _getUniqueSubjects(tutors);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -238,11 +189,21 @@ class _TutoringScreenState extends State<TutoringScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: categories.length,
+            itemCount: dynamicCategories.length,
             itemBuilder: (context, index) {
+              final subject = dynamicCategories[index];
+              final isSelected = subject == _selectedCategory;
+
               return _CategoryCard(
-                  label: categories[index],
-                  icon: _getIconForSubject(categories[index]));
+                  label: subject,
+                  icon: _getIconForSubject(subject),
+                  isSelected: isSelected,
+                  onTap: () {
+                    setState(() {
+                      _selectedCategory = isSelected ? null : subject;
+                      _searchText = "";
+                    });
+                  });
             },
           ),
         ),
@@ -251,8 +212,9 @@ class _TutoringScreenState extends State<TutoringScreen> {
     );
   }
 
-  // Top Tutors
-  Widget _buildTopTutorsSection() {
+  Widget _buildTopTutorsSection(List<TutorEntity> tutors) {
+    final filteredTutors = _filterTutors(tutors);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -262,23 +224,23 @@ class _TutoringScreenState extends State<TutoringScreen> {
               style:
                   GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 15),
-          if (_filteredTopTutors.isEmpty)
+          if (filteredTutors.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 20.0),
               child: Center(
                 child: Text(
-                  "No tutors found matching '$_searchText'",
+                  _searchText.isEmpty && _selectedCategory != null
+                      ? "No hay tutores disponibles en $_selectedCategory."
+                      : "No tutors found matching '$_searchText'",
                   style: GoogleFonts.inter(color: Colors.grey),
                 ),
               ),
             )
           else
-            ..._filteredTopTutors.map((tutor) => _TopTutorItem(tutor: tutor)),
+            ...filteredTutors.map((tutor) => _TopTutorItem(tutor: tutor)),
           const SizedBox(height: 25),
           InkWell(
-            onTap: () {
-              print("Navigating to full tutor list.");
-            },
+            onTap: _resetFilters,
             child: Container(
               width: double.infinity,
               height: 55,
@@ -287,7 +249,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    // CORRECCIÓN: Reemplazo de withOpacity(0.2) por withAlpha(51)
                     color: Colors.black.withAlpha(51),
                     spreadRadius: 0,
                     blurRadius: 10,
@@ -312,8 +273,11 @@ class _TutoringScreenState extends State<TutoringScreen> {
     );
   }
 
-  // Book Again
+  // ✅ CORRECCIÓN CRÍTICA: Se modificó para observar bookAgainTutorsProvider
   Widget _buildBookAgainSection() {
+    final tutorsAsync =
+        ref.watch(bookAgainTutorsProvider); // Watch the Book Again Provider
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -326,9 +290,7 @@ class _TutoringScreenState extends State<TutoringScreen> {
                   style: GoogleFonts.inter(
                       fontSize: 20, fontWeight: FontWeight.bold)),
               InkWell(
-                onTap: () {
-                  print("Navigating to previous sessions list.");
-                },
+                onTap: () {},
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
                   padding: const EdgeInsets.all(4.0),
@@ -341,17 +303,41 @@ class _TutoringScreenState extends State<TutoringScreen> {
           ),
         ),
         const SizedBox(height: 15),
-        SizedBox(
-          height: 180,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: bookAgainTutors.length,
-            itemBuilder: (context, index) {
-              return _BookAgainCard(tutor: bookAgainTutors[index]);
-            },
-          ),
+
+        // ✅ Manejo del estado asíncrono para Book Again
+        tutorsAsync.when(
+          loading: () => const Center(
+              child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: CircularProgressIndicator(
+                      color: primaryColor, strokeWidth: 2))),
+          error: (err, stack) => Center(
+              child: Text('Error loading sessions: $err',
+                  style: TextStyle(color: Colors.red))),
+          data: (bookAgainTutors) {
+            if (bookAgainTutors.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Center(
+                    child: Text("No has completado tutorías previamente.",
+                        style: GoogleFonts.inter(color: Colors.grey))),
+              );
+            }
+
+            return SizedBox(
+              height: 180,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemCount: bookAgainTutors.length,
+                itemBuilder: (context, index) {
+                  return _BookAgainCard(tutor: bookAgainTutors[index]);
+                },
+              ),
+            );
+          },
         ),
+
         const SizedBox(height: 40),
       ],
     );
@@ -374,8 +360,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
     }
   }
 
-  // WIDGET DE NAVEGACIÓN INFERIOR
-
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Material(
       elevation: 10,
@@ -388,7 +372,6 @@ class _TutoringScreenState extends State<TutoringScreen> {
         showUnselectedLabels: true,
         elevation: 0,
         onTap: (int i) {
-          // pushReplacementNamed
           if (i == 0) Navigator.pushReplacementNamed(context, '/dashboard');
           if (i == 1) Navigator.pushReplacementNamed(context, '/tasks');
           if (i == 2) Navigator.pushReplacementNamed(context, '/tutoring');
@@ -422,6 +405,8 @@ class _TutoringScreenState extends State<TutoringScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tutorsAsync = ref.watch(topTutorsProvider);
+
     return Scaffold(
       backgroundColor: cardBackgroundColor,
       appBar: AppBar(
@@ -438,8 +423,21 @@ class _TutoringScreenState extends State<TutoringScreen> {
           children: [
             _buildHeader(context),
             if (_selectedTab == 0) ...[
-              _buildCategoriesSection(),
-              _buildTopTutorsSection(),
+              tutorsAsync.when(
+                  loading: () => const Center(
+                      child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: CircularProgressIndicator(
+                              color: primaryColor, strokeWidth: 3))),
+                  error: (err, stack) => Center(
+                      child: Text('Error loading data: $err',
+                          style: GoogleFonts.inter(color: Colors.red))),
+                  data: (tutors) {
+                    return Column(children: [
+                      _buildCategoriesSection(tutors),
+                      _buildTopTutorsSection(tutors),
+                    ]);
+                  }),
             ] else
               _buildBookAgainSection(),
             const SizedBox(height: 20),
@@ -487,28 +485,33 @@ Widget _buildRatingStars(double rating, {bool showReviews = true}) {
 class _CategoryCard extends StatelessWidget {
   final String label;
   final IconData icon;
+  final VoidCallback onTap;
+  final bool isSelected;
 
-  const _CategoryCard({required this.label, required this.icon});
+  const _CategoryCard(
+      {required this.label,
+      required this.icon,
+      required this.onTap,
+      this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {
-    // InkWell para efecto táctil
     return InkWell(
-      onTap: () {
-        print("Tapped on category: $label");
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(15),
       child: Container(
         width: 100,
         margin: const EdgeInsets.only(right: 15),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: cardBackgroundColor,
+          color:
+              isSelected ? primaryColor.withOpacity(0.1) : cardBackgroundColor,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
+          border: Border.all(
+              color: isSelected ? primaryColor : Colors.grey.shade300,
+              width: isSelected ? 2 : 1),
           boxShadow: [
             BoxShadow(
-              // CORRECCIÓN: Reemplazo de withOpacity(0.05) por withAlpha(13)
               color: Colors.grey.withAlpha(13),
               spreadRadius: 1,
               blurRadius: 5,
@@ -519,25 +522,21 @@ class _CategoryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Top Rated" Chip
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                // CORRECCIÓN: Reemplazo de withOpacity(0.1) por withAlpha(25)
-                color: primaryColor.withAlpha(25),
+                color: isSelected ? primaryColor : primaryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(5),
               ),
-              child: Text("Top Rated",
+              child: Text(isSelected ? "SELECTED" : "Top Rated",
                   style: GoogleFonts.inter(
-                      color: primaryColor,
+                      color: isSelected ? Colors.white : primaryColor,
                       fontSize: 10,
                       fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 5),
-
             Icon(icon, color: primaryColor, size: 30),
             const Spacer(),
-
             Text(label,
                 style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600, fontSize: 14)),
@@ -548,13 +547,17 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
+// Tarjeta de Tutor
 class _TopTutorItem extends StatelessWidget {
-  final Tutor tutor;
+  final TutorEntity tutor;
 
   const _TopTutorItem({required this.tutor});
 
   @override
   Widget build(BuildContext context) {
+    final bool hasImage = tutor.profileImageUrl.isNotEmpty &&
+        tutor.profileImageUrl != 'https://via.placeholder.com/200';
+
     return InkWell(
       onTap: () {
         print("Navigating to tutor profile: ${tutor.name}");
@@ -564,22 +567,17 @@ class _TopTutorItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            // MODIFICACIÓN 3A: Implementación de la imagen de perfil
             CircleAvatar(
               radius: 28,
               backgroundColor: Colors.grey.shade300,
-              // Usa NetworkImage si hay una URL, sino es nulo.
-              backgroundImage: tutor.profileImageUrl != null
-                  ? NetworkImage(tutor.profileImageUrl!)
+              backgroundImage: hasImage
+                  ? NetworkImage(tutor.profileImageUrl) as ImageProvider
                   : null,
-              // Muestra el icono de persona si no hay imagen (backgroundImage es nulo)
-              child: tutor.profileImageUrl == null
+              child: !hasImage
                   ? const Icon(Icons.person, color: primaryColor)
                   : null,
             ),
             const SizedBox(width: 15),
-
-            // Nombre y Materia
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +602,6 @@ class _TopTutorItem extends StatelessWidget {
                 ],
               ),
             ),
-
             const Icon(Icons.arrow_forward_ios, size: 16, color: primaryColor),
           ],
         ),
@@ -613,14 +610,17 @@ class _TopTutorItem extends StatelessWidget {
   }
 }
 
+// Tarjeta de "Book Again"
 class _BookAgainCard extends StatelessWidget {
-  final Tutor tutor;
+  final TutorEntity tutor;
 
   const _BookAgainCard({required this.tutor});
 
   @override
   Widget build(BuildContext context) {
-    // InkWell para efecto táctil y redirección
+    final bool hasImage = tutor.profileImageUrl.isNotEmpty &&
+        tutor.profileImageUrl != 'https://via.placeholder.com/200';
+
     return InkWell(
       onTap: () {
         print("Re-booking session with tutor: ${tutor.name}");
@@ -630,29 +630,26 @@ class _BookAgainCard extends StatelessWidget {
         width: 120,
         margin: const EdgeInsets.only(right: 15),
         decoration: BoxDecoration(
-          // CORRECCIÓN: Reemplazo de withOpacity(0.5) por withAlpha(127)
           color: backgroundColor.withAlpha(127),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // MODIFICACIÓN 3B: Implementación de la imagen en la tarjeta
             Container(
               height: 100,
               decoration: BoxDecoration(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(12)),
-                // Si hay URL, usa la imagen de red.
-                image: tutor.profileImageUrl != null
+                image: hasImage
                     ? DecorationImage(
-                        image: NetworkImage(tutor.profileImageUrl!),
+                        image: NetworkImage(tutor.profileImageUrl),
                         fit: BoxFit.cover,
                       )
                     : null,
                 color: Colors.grey.shade300,
               ),
-              child: tutor.profileImageUrl == null
+              child: !hasImage
                   ? Center(
                       child: Icon(Icons.person,
                           color: Colors.grey.shade600, size: 40),

@@ -11,27 +11,45 @@ final tasksNotifierProvider =
   return TasksNotifier(repository);
 });
 
+// ✅ CORRECCIÓN CLAVE: El FutureProvider debe observar el Notifier,
+// no intentar manejar la lógica de carga, que ya está en el Notifier.
+final tasksFutureProvider = FutureProvider<List<TaskEntity>>((ref) async {
+  // 💡 Hacemos que el FutureProvider observe el StateNotifier.
+  // Esto asegura que cualquier actualización en el StateNotifier (como crear una tarea)
+  // también notifique al FutureProvider, que a su vez refresca el Dashboard.
+  return ref.watch(tasksNotifierProvider);
+});
+
 class TasksNotifier extends StateNotifier<List<TaskEntity>> {
   final TaskRepository _repository;
+  // ✅ Nuevo: Almacena el Future de carga inicial
+  late final Future<void> initialLoadFuture;
 
   TasksNotifier(this._repository) : super([]) {
-    loadTasks();
+    // ✅ Se asigna el Future de carga al iniciar el Notifier
+    initialLoadFuture = _loadInitialTasks();
   }
 
-  // READ: Lógica para cargar las tareas
-  Future<void> loadTasks() async {
+  // Función para manejar el Future de carga inicial
+  Future<void> _loadInitialTasks() async {
     try {
       final tasks = await _repository.getTasks();
-      state = tasks;
+      state = tasks; // Actualiza el estado principal
     } catch (e) {
       print('Error loading tasks: $e');
       state = [];
     }
   }
 
+  // 🛑 Se mantiene el método loadTasks, pero se asegura que la carga ocurra al inicio
+  Future<void> loadTasks() => initialLoadFuture;
+
   // CREATE: Lógica para crear una tarea
   Future<void> createTask(
       String title, String subject, String dueTime, String dueDate) async {
+    // 💡 Asegurarse de esperar la carga inicial antes de intentar crear
+    await initialLoadFuture;
+
     final tempTask = TaskEntity(
         id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
         title: title,
@@ -41,32 +59,29 @@ class TasksNotifier extends StateNotifier<List<TaskEntity>> {
         color: [Colors.blue, Colors.green, Colors.pink, Colors.orange]
             .elementAt(DateTime.now().minute % 4));
 
-    // Optimistic UI Update
     state = [...state, tempTask];
 
     try {
       final actualTask = await _repository.createTask(tempTask);
 
-      // Reemplaza la tarea temporal con la tarea real del repositorio
       state = [
         for (final task in state)
           if (task.id == tempTask.id) actualTask else task,
       ];
     } catch (e) {
-      // Revertir el estado si falla la creación
       state = state.where((task) => task.id != tempTask.id).toList();
       print('Failed to create task: $e');
     }
   }
 
-  // ✅ NUEVO MÉTODO AGREGADO: Lógica para editar campos de una tarea (UPDATE completo)
+  // UPDATE: Lógica para editar campos de una tarea (UPDATE completo)
   Future<void> updateTask(TaskEntity updatedTask) async {
     final taskIndex = state.indexWhere((t) => t.id == updatedTask.id);
     if (taskIndex == -1) return;
 
     final originalTask = state[taskIndex];
 
-    // 1. Optimistic UI Update: Actualizar el estado local
+    // Optimistic UI Update
     state = [
       ...state.sublist(0, taskIndex),
       updatedTask,
@@ -74,17 +89,15 @@ class TasksNotifier extends StateNotifier<List<TaskEntity>> {
     ];
 
     try {
-      // 2. Enviar la actualización completa al repositorio (usa updateTask del repo)
       await _repository.updateTask(updatedTask);
     } catch (e) {
-      // 3. Si falla, revertimos el estado
       state = [
         ...state.sublist(0, taskIndex),
         originalTask,
         ...state.sublist(taskIndex + 1),
       ];
       print('Failed to update task: $e');
-      throw Exception('Failed to update task details.'); // Propagar error
+      throw Exception('Failed to update task details.');
     }
   }
 
@@ -105,7 +118,6 @@ class TasksNotifier extends StateNotifier<List<TaskEntity>> {
     ];
 
     try {
-      // Usamos el método updateTask del repositorio, ya que maneja cualquier actualización
       await _repository.updateTask(updatedTask);
     } catch (e) {
       // Revertir el estado si falla la actualización
