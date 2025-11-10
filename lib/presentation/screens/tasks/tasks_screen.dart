@@ -220,11 +220,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
                   return TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildTaskList(_getFilteredTasks(0, allTasks)), // To Do
-                      _buildTaskList(
-                          _getFilteredTasks(1, allTasks)), // In Progress
-                      _buildTaskList(
-                          _getFilteredTasks(2, allTasks)), // Completed
+                      _buildTaskList(_getFilteredTasks(0, allTasks)),
+                      _buildTaskList(_getFilteredTasks(1, allTasks)),
+                      _buildTaskList(_getFilteredTasks(2, allTasks)),
                     ],
                   );
                 }),
