@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mentu_app/presentation/providers/tasks_provider.dart';
 import 'package:mentu_app/domain/entities/task_entity.dart';
 import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart';
-import 'package:intl/intl.dart'; // ✅ Importar para formateo de fechas
+// ignore: depend_on_referenced_packages
+import 'package:intl/intl.dart';
 
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
@@ -34,7 +35,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     super.dispose();
   }
 
-  // 💡 Función auxiliar para mostrar errores
   void _showErrorSnackbar(String error) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -44,7 +44,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  // ✅ CORRECCIÓN: Manejar errores asíncronos
   void _toggleTaskStatus(TaskEntity task) async {
     try {
       await ref.read(tasksNotifierProvider.notifier).toggleStatus(task.id);
@@ -61,7 +60,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  // ✅ CORRECCIÓN: Manejar errores asíncronos
   void _deleteTask(TaskEntity task) async {
     try {
       await ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
@@ -86,14 +84,12 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     }
   }
 
-  // ✅ CORRECCIÓN CRÍTICA: Agrupar por fecha formateada (String)
   Map<String, List<TaskEntity>> _groupTasksByDate(List<TaskEntity> tasks) {
     final Map<String, List<TaskEntity>> grouped = {};
-    // Usar el formateador de fechas
+
     final DateFormat formatter = DateFormat('EEEE, MMMM d');
 
     for (var task in tasks) {
-      // Formatear el DateTime a String para usarlo como clave
       final key =
           task.isCompleted ? 'Completed' : formatter.format(task.dueDate);
 
@@ -205,7 +201,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
 
   @override
   Widget build(BuildContext context) {
-    // ✅ CORRECCIÓN: Observar el FutureProvider para manejar el estado asíncrono
     final tasksAsync = ref.watch(tasksFutureProvider);
 
     return Scaffold(
@@ -215,7 +210,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
         children: [
           _buildTabBar(),
           Expanded(
-            // ✅ CORRECCIÓN: Usar .when() para manejar Loading/Error/Data
             child: tasksAsync.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: primaryColor)),
@@ -393,7 +387,6 @@ class _TaskCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                // ✅ CORRECCIÓN: Usar el formato de hora correcto
                 Text(
                   task.dueTime,
                   style: GoogleFonts.inter(fontSize: 12, color: Colors.black54),
