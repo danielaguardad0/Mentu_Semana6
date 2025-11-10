@@ -6,11 +6,10 @@ import '../../providers/tasks_provider.dart';
 import '../../../domain/entities/task_entity.dart';
 import '../../providers/auth_provider.dart';
 
-// Paleta de Colores
-const Color primaryColor = Color(0xFF4C7FFF); // Azul Principal
-const Color accentColor = Color(0xFF4CAF50); // Verde Acento
-const Color lightAccentColor = Color(0xFFC7FFCA); // Verde muy claro
-const Color appBackgroundColor = Color(0xFFF0F4F8); // Gris Azulado muy claro
+const Color primaryColor = Color(0xFF4C7FFF);
+const Color accentColor = Color(0xFF4CAF50);
+const Color lightAccentColor = Color(0xFFC7FFCA);
+const Color appBackgroundColor = Color(0xFFF0F4F8);
 const Color cardBackgroundColor = Colors.white;
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -21,22 +20,18 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  // ✅ Estado del calendario
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
   @override
   void initState() {
     super.initState();
-    // Inicializar el día seleccionado
     _selectedDay = DateTime.now();
   }
 
-  // 💡 Lógica que mapea la lista de tareas a un Map de eventos para el calendario
   Map<DateTime, List<TaskEntity>> _getEventsMap(List<TaskEntity> tasks) {
     final Map<DateTime, List<TaskEntity>> eventMap = {};
     for (var task in tasks.where((t) => !t.isCompleted)) {
-      // Normalizar la fecha de vencimiento a medianoche para que la comparación funcione
       final normalizedDate =
           DateTime(task.dueDate.year, task.dueDate.month, task.dueDate.day);
 
@@ -46,13 +41,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return eventMap;
   }
 
-  // Lógica para obtener eventos en un día específico (para _CalendarCard)
-
-  // 🛑 ELIMINADA: _calculateProgress
-
   List<TaskEntity> _getUpcomingTasks(List<TaskEntity> tasks) {
     final pendingTasks = tasks.where((t) => !t.isCompleted).toList();
-    // Devolver solo las primeras 4
     return pendingTasks.take(4).toList();
   }
 
@@ -71,7 +61,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             _buildHeader(context, user.name),
             const SizedBox(height: 30),
 
-            // ✅ SECCIÓN CALENDARIO
+            // SECCIÓN CALENDARIO
             _buildSectionTitle('Próximas Fechas'),
             const SizedBox(height: 15),
 
@@ -98,12 +88,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
             const SizedBox(height: 30),
 
-            // 🛑 SECCIÓN ELIMINADA: Progreso por Materia
-
             _buildSectionTitle('Tareas Próximas'),
             const SizedBox(height: 15),
 
-            // ✅ TAREAS PRÓXIMAS (Mantenida)
+            // TAREAS PRÓXIMAS
             tasksAsync.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: primaryColor)),
@@ -129,10 +117,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               title: task.title,
                               subject: task.subject,
                               dueDate: task.dueDate
-                                      .toLocal()
-                                      .toString()
-                                      .split(' ')[
-                                  0], // Convertir DateTime a string de fecha para mostrar
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0],
                               color: task.color,
                               icon: Icons.assignment_outlined,
                             ))
@@ -216,7 +203,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 }
 
 // -------------------------------------------------------------------
-// ✅ WIDGET CALENDARIO (Integrado)
+// WIDGET CALENDARIO
 // -------------------------------------------------------------------
 class _CalendarCard extends StatelessWidget {
   final DateTime focusedDay;
@@ -285,7 +272,7 @@ class _CalendarCard extends StatelessWidget {
 }
 
 // -------------------------------------------------------------------
-// TAREA PRÓXIMA (Mantenida)
+// TAREA PRÓXIMA
 // -------------------------------------------------------------------
 class _TaskEntry extends StatelessWidget {
   final String title;
@@ -349,7 +336,7 @@ class _TaskEntry extends StatelessWidget {
 }
 
 // -------------------------------------------------------------------
-// NAVEGACIÓN INFERIOR (Mantenida)
+// NAVEGACIÓN INFERIOR
 // -------------------------------------------------------------------
 Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
