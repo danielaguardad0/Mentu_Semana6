@@ -1,17 +1,15 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mentu_app/presentation/providers/tasks_provider.dart';
 import 'package:mentu_app/domain/entities/task_entity.dart';
-import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart'; 
+import 'package:mentu_app/presentation/screens/tasks/task_form_screen.dart';
+import 'package:intl/intl.dart'; // ✅ Importar para formateo de fechas
 
 const Color primaryColor = Colors.blue;
 const Color accentColor = Color(0xFF4CAF50);
 const Color backgroundColor = Color(0xFFD2EBE8);
 const Color cardBackgroundColor = Colors.white;
-
 
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -20,12 +18,9 @@ class TasksScreen extends ConsumerStatefulWidget {
   ConsumerState<TasksScreen> createState() => _TasksScreenState();
 }
 
-
 class _TasksScreenState extends ConsumerState<TasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  
 
   @override
   void initState() {
@@ -39,36 +34,50 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     super.dispose();
   }
 
-  
+  // 💡 Función auxiliar para mostrar errores
+  void _showErrorSnackbar(String error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(
+              "Error: ${error.contains('Exception:') ? error.split(':').last : error}"),
+          backgroundColor: Colors.red),
+    );
+  }
 
-  void _toggleTaskStatus(TaskEntity task) {
-    ref.read(tasksNotifierProvider.notifier).toggleStatus(task.id);
+  // ✅ CORRECCIÓN: Manejar errores asíncronos
+  void _toggleTaskStatus(TaskEntity task) async {
+    try {
+      await ref.read(tasksNotifierProvider.notifier).toggleStatus(task.id);
+    } catch (e) {
+      _showErrorSnackbar(e.toString());
+    }
   }
 
   void _editTask(TaskEntity task) {
-    
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => TaskFormScreen(taskToEdit: task), 
+        builder: (context) => TaskFormScreen(taskToEdit: task),
       ),
     );
   }
 
-  void _deleteTask(TaskEntity task) {
-    ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
+  // ✅ CORRECCIÓN: Manejar errores asíncronos
+  void _deleteTask(TaskEntity task) async {
+    try {
+      await ref.read(tasksNotifierProvider.notifier).deleteTask(task.id);
+    } catch (e) {
+      _showErrorSnackbar(e.toString());
+    }
   }
 
-  
   void _handleNewTask() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        
         builder: (context) => const TaskFormScreen(),
       ),
     );
   }
 
-  
   List<TaskEntity> _getFilteredTasks(int index, List<TaskEntity> allTasks) {
     if (index == 2) {
       return allTasks.where((task) => task.isCompleted).toList();
@@ -77,11 +86,17 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     }
   }
 
-  
+  // ✅ CORRECCIÓN CRÍTICA: Agrupar por fecha formateada (String)
   Map<String, List<TaskEntity>> _groupTasksByDate(List<TaskEntity> tasks) {
     final Map<String, List<TaskEntity>> grouped = {};
+    // Usar el formateador de fechas
+    final DateFormat formatter = DateFormat('EEEE, MMMM d');
+
     for (var task in tasks) {
-      final key = task.isCompleted ? 'Completed' : task.dueDate;
+      // Formatear el DateTime a String para usarlo como clave
+      final key =
+          task.isCompleted ? 'Completed' : formatter.format(task.dueDate);
+
       if (!grouped.containsKey(key)) {
         grouped[key] = [];
       }
@@ -90,7 +105,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     return grouped;
   }
 
-  
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: cardBackgroundColor,
@@ -105,7 +119,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  
   Widget _buildTabBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -147,7 +160,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Material(
       elevation: 10,
@@ -193,8 +205,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
 
   @override
   Widget build(BuildContext context) {
-    
-    final allTasks = ref.watch(tasksNotifierProvider);
+    // ✅ CORRECCIÓN: Observar el FutureProvider para manejar el estado asíncrono
+    final tasksAsync = ref.watch(tasksFutureProvider);
 
     return Scaffold(
       backgroundColor: cardBackgroundColor,
@@ -203,19 +215,30 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
         children: [
           _buildTabBar(),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTaskList(_getFilteredTasks(0, allTasks)), 
-                _buildTaskList(_getFilteredTasks(1, allTasks)), 
-                _buildTaskList(_getFilteredTasks(2, allTasks)), 
-              ],
-            ),
+            // ✅ CORRECCIÓN: Usar .when() para manejar Loading/Error/Data
+            child: tasksAsync.when(
+                loading: () => const Center(
+                    child: CircularProgressIndicator(color: primaryColor)),
+                error: (err, stack) => Center(
+                    child: Text('Error al cargar tareas: $err',
+                        style: TextStyle(color: Colors.red))),
+                data: (allTasks) {
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildTaskList(_getFilteredTasks(0, allTasks)), // To Do
+                      _buildTaskList(
+                          _getFilteredTasks(1, allTasks)), // In Progress
+                      _buildTaskList(
+                          _getFilteredTasks(2, allTasks)), // Completed
+                    ],
+                  );
+                }),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _handleNewTask, 
+        onPressed: _handleNewTask,
         icon: const Icon(Icons.add_rounded, size: 28),
         label: Text("New Task",
             style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
@@ -228,7 +251,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
     );
   }
 
-  
   Widget _buildTaskList(List<TaskEntity> tasks) {
     if (tasks.isEmpty) {
       final String emptyMessage = _tabController.index == 2
@@ -267,7 +289,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
                     color: primaryColor.withOpacity(0.8)),
               ),
             ),
-            
             ...tasksForDate.map((task) => _TaskCard(
                   task: task,
                   onToggleStatus: () => _toggleTaskStatus(task),
@@ -281,10 +302,8 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
   }
 }
 
-
-
 class _TaskCard extends StatelessWidget {
-  final TaskEntity task; 
+  final TaskEntity task;
   final VoidCallback onToggleStatus;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -374,6 +393,7 @@ class _TaskCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
+                // ✅ CORRECCIÓN: Usar el formato de hora correcto
                 Text(
                   task.dueTime,
                   style: GoogleFonts.inter(fontSize: 12, color: Colors.black54),

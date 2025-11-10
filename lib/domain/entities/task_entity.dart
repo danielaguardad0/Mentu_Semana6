@@ -1,3 +1,4 @@
+// lib/domain/entities/task_entity.dart
 
 import 'package:flutter/material.dart';
 
@@ -6,7 +7,7 @@ class TaskEntity {
   final String title;
   final String subject;
   final String dueTime;
-  final String dueDate;
+  final DateTime dueDate; // ✅ CORRECCIÓN CRÍTICA: Ahora es DateTime
   final Color color;
   final bool isCompleted;
 
@@ -15,18 +16,17 @@ class TaskEntity {
     required this.title,
     required this.subject,
     required this.dueTime,
-    required this.dueDate,
+    required this.dueDate, // ✅ Constructor espera DateTime
     this.color = Colors.blue,
     this.isCompleted = false,
   });
 
- 
   TaskEntity copyWith({
     String? id,
     String? title,
     String? subject,
     String? dueTime,
-    String? dueDate,
+    DateTime? dueDate, // ✅ copyWith espera DateTime
     Color? color,
     bool? isCompleted,
   }) {
@@ -35,7 +35,7 @@ class TaskEntity {
       title: title ?? this.title,
       subject: subject ?? this.subject,
       dueTime: dueTime ?? this.dueTime,
-      dueDate: dueDate ?? this.dueDate,
+      dueDate: dueDate ?? this.dueDate, // ✅ Asigna DateTime
       color: color ?? this.color,
       isCompleted: isCompleted ?? this.isCompleted,
     );

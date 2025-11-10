@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../../providers/tasks_provider.dart';
 import '../../../domain/entities/task_entity.dart';
 import '../../providers/auth_provider.dart';
 
-const Color primaryColor = Color(0xFF4C7FFF); 
-const Color accentColor = Color(0xFF4CAF50); 
-const Color lightAccentColor = Color(0xFFC7FFCA); 
-const Color appBackgroundColor = Color(0xFFF0F4F8); 
+// Paleta de Colores
+const Color primaryColor = Color(0xFF4C7FFF); // Azul Principal
+const Color accentColor = Color(0xFF4CAF50); // Verde Acento
+const Color lightAccentColor = Color(0xFFC7FFCA); // Verde muy claro
+const Color appBackgroundColor = Color(0xFFF0F4F8); // Gris Azulado muy claro
 const Color cardBackgroundColor = Colors.white;
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -20,66 +21,39 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _selectedPeriod = 1;
+  // ✅ Estado del calendario
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
 
-  Map<String, int> _calculateProgress(List<TaskEntity> tasks) {
-    if (tasks.isEmpty) return {};
-
-    final Map<String, int> completedCounts = {};
-    final Map<String, int> totalCounts = {};
-    final Map<String, int> progressPercentages = {};
-
-    for (var task in tasks) {
-      totalCounts.update(task.subject, (count) => count + 1, ifAbsent: () => 1);
-      if (task.isCompleted) {
-        completedCounts.update(task.subject, (count) => count + 1,
-            ifAbsent: () => 1);
-      }
-    }
-
-    totalCounts.forEach((subject, total) {
-      final completed = completedCounts[subject] ?? 0;
-      final progress = (completed * 100) ~/ total;
-      progressPercentages[subject] = progress.clamp(0, 100);
-    });
-
-    return progressPercentages;
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar el día seleccionado
+    _selectedDay = DateTime.now();
   }
+
+  // 💡 Lógica que mapea la lista de tareas a un Map de eventos para el calendario
+  Map<DateTime, List<TaskEntity>> _getEventsMap(List<TaskEntity> tasks) {
+    final Map<DateTime, List<TaskEntity>> eventMap = {};
+    for (var task in tasks.where((t) => !t.isCompleted)) {
+      // Normalizar la fecha de vencimiento a medianoche para que la comparación funcione
+      final normalizedDate =
+          DateTime(task.dueDate.year, task.dueDate.month, task.dueDate.day);
+
+      eventMap.putIfAbsent(normalizedDate, () => []);
+      eventMap[normalizedDate]!.add(task);
+    }
+    return eventMap;
+  }
+
+  // Lógica para obtener eventos en un día específico (para _CalendarCard)
+
+  // 🛑 ELIMINADA: _calculateProgress
 
   List<TaskEntity> _getUpcomingTasks(List<TaskEntity> tasks) {
     final pendingTasks = tasks.where((t) => !t.isCompleted).toList();
+    // Devolver solo las primeras 4
     return pendingTasks.take(4).toList();
-  }
-
-  BarChartGroupData _makeBarData(int x, int baseValue, int period) {
-    int adjustedValue = baseValue;
-
-    if (period == 0) {
-      adjustedValue = (baseValue + (x % 2 == 0 ? 5 : -5)).clamp(10, 100);
-    } else if (period == 2) {
-      adjustedValue = (baseValue + 5).clamp(10, 100);
-    }
-
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: adjustedValue.toDouble(),
-          color: accentColor,
-          width: 15,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(5),
-            topRight: Radius.circular(5),
-          ),
-          backDrawRodData: BackgroundBarChartRodData(
-            show: true,
-            toY: 100,
-            color: lightAccentColor.withOpacity(0.5),
-          ),
-        ),
-      ],
-      showingTooltipIndicators: const [0],
-    );
   }
 
   @override
@@ -87,24 +61,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final AsyncValue<List<TaskEntity>> tasksAsync =
         ref.watch(tasksFutureProvider);
     final user = ref.watch(authNotifierProvider);
-
-    final List<BarChartGroupData> barGroups = [];
-    final List<String> subjectAbbreviations = [];
-
-    tasksAsync.whenData((tasks) {
-      final progressMap = _calculateProgress(tasks);
-
-      progressMap.entries.toList().asMap().entries.forEach((entry) {
-        final int index = entry.key;
-        final String subject = entry.value.key;
-        final int progressValue = entry.value.value;
-
-        subjectAbbreviations
-            .add(subject.substring(0, subject.length > 4 ? 4 : subject.length));
-
-        barGroups.add(_makeBarData(index, progressValue, _selectedPeriod));
-      });
-    });
 
     return Scaffold(
       backgroundColor: appBackgroundColor,
@@ -114,28 +70,40 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           children: [
             _buildHeader(context, user.name),
             const SizedBox(height: 30),
-            _buildSectionTitle('Progreso'),
+
+            // ✅ SECCIÓN CALENDARIO
+            _buildSectionTitle('Próximas Fechas'),
             const SizedBox(height: 15),
+
             tasksAsync.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: primaryColor)),
                 error: (err, stack) =>
-                    Center(child: Text('Error al cargar progreso: $err')),
-                data: (_) {
-                  return _ProgressCard(
-                    barGroups: barGroups,
-                    selectedPeriod: _selectedPeriod,
-                    subjectAbbreviations: subjectAbbreviations,
-                    onPeriodChanged: (int newPeriod) {
+                    Center(child: Text('Error al cargar calendario: $err')),
+                data: (tasks) {
+                  final events = _getEventsMap(tasks);
+
+                  return _CalendarCard(
+                    focusedDay: _focusedDay,
+                    selectedDay: _selectedDay,
+                    events: events,
+                    onDaySelected: (selectedDay, focusedDay) {
                       setState(() {
-                        _selectedPeriod = newPeriod;
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
                       });
                     },
                   );
                 }),
+
             const SizedBox(height: 30),
+
+            // 🛑 SECCIÓN ELIMINADA: Progreso por Materia
+
             _buildSectionTitle('Tareas Próximas'),
             const SizedBox(height: 15),
+
+            // ✅ TAREAS PRÓXIMAS (Mantenida)
             tasksAsync.when(
                 loading: () => const Center(
                     child: CircularProgressIndicator(color: primaryColor)),
@@ -160,13 +128,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         .map((task) => _TaskEntry(
                               title: task.title,
                               subject: task.subject,
-                              dueDate: task.dueDate,
+                              dueDate: task.dueDate
+                                      .toLocal()
+                                      .toString()
+                                      .split(' ')[
+                                  0], // Convertir DateTime a string de fecha para mostrar
                               color: task.color,
                               icon: Icons.assignment_outlined,
                             ))
                         .toList(),
                   );
                 }),
+
             const SizedBox(height: 20),
             Center(
               child: TextButton(
@@ -188,9 +161,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  // --- Widgets Auxiliares ---
   Widget _buildHeader(BuildContext context, String userName) {
     final displayUserName = userName.split(' ').first;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -205,10 +178,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Bienvenida,",
-                  style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
-                ),
+                Text("Bienvenida,",
+                    style:
+                        GoogleFonts.inter(fontSize: 14, color: Colors.black54)),
                 Text(
                   displayUserName.isEmpty
                       ? "Estudiante Mentu"
@@ -243,190 +215,78 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 }
 
+// -------------------------------------------------------------------
+// ✅ WIDGET CALENDARIO (Integrado)
+// -------------------------------------------------------------------
+class _CalendarCard extends StatelessWidget {
+  final DateTime focusedDay;
+  final DateTime? selectedDay;
+  final Map<DateTime, List<TaskEntity>> events;
+  final Function(DateTime, DateTime) onDaySelected;
 
-class _ProgressCard extends StatelessWidget {
-  final List<BarChartGroupData> barGroups;
-  final int selectedPeriod;
-  final List<String> subjectAbbreviations;
-  final ValueChanged<int> onPeriodChanged;
-
-  const _ProgressCard({
-    required this.barGroups,
-    required this.selectedPeriod,
-    required this.subjectAbbreviations,
-    required this.onPeriodChanged,
+  const _CalendarCard({
+    required this.focusedDay,
+    required this.selectedDay,
+    required this.events,
+    required this.onDaySelected,
   });
+
+  List<TaskEntity> _getEventsForDay(DateTime day) {
+    final normalizedDay = DateTime(day.year, day.month, day.day);
+    return events[normalizedDay] ?? [];
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (barGroups.isEmpty) {
-      return Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        color: cardBackgroundColor,
-        child: const Padding(
-            padding: EdgeInsets.all(40),
-            child: Center(
-                child: Text(
-                    "¡Completa tus primeras tareas para ver tu progreso!"))),
-      );
-    }
-
     return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 4,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16))),
       color: cardBackgroundColor,
       child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _TimePeriodSelector(
-              selectedPeriod: selectedPeriod,
-              onPeriodChanged: onPeriodChanged,
+        padding: const EdgeInsets.all(8.0),
+        child: TableCalendar<TaskEntity>(
+          firstDay: DateTime.utc(2023, 1, 1),
+          lastDay: DateTime.utc(2025, 12, 31),
+          focusedDay: focusedDay,
+          selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+          rangeSelectionMode: RangeSelectionMode.disabled,
+          eventLoader: _getEventsForDay,
+          onDaySelected: onDaySelected,
+          onPageChanged: (focusedDay) => focusedDay = focusedDay,
+          headerStyle: HeaderStyle(
+            formatButtonVisible: false,
+            titleCentered: true,
+            titleTextStyle:
+                GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16),
+            leftChevronIcon: Icon(Icons.chevron_left, color: primaryColor),
+            rightChevronIcon: Icon(Icons.chevron_right, color: primaryColor),
+          ),
+          calendarStyle: CalendarStyle(
+            markerSize: 6.0,
+            markersAnchor: 0.5,
+            markerDecoration: BoxDecoration(
+              color: accentColor,
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 180,
-              child: BarChart(
-                BarChartData(
-                  barGroups: barGroups,
-                  maxY: 100,
-                  borderData: FlBorderData(show: false),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final List<String> titles = subjectAbbreviations;
-
-                          if (value.toInt() < titles.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                titles[value.toInt()],
-                                style: GoogleFonts.inter(
-                                    fontSize: 10, color: Colors.black54),
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (double value, TitleMeta meta) {
-                          if (value == 0 || value == 50 || value == 100) {
-                            return Text(
-                              '${value.toInt()}%',
-                              style: GoogleFonts.inter(
-                                  fontSize: 10, color: Colors.black54),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                  ),
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (double value) {
-                      return FlLine(
-                        color: Colors.grey.withOpacity(0.2),
-                        strokeWidth: 1,
-                      );
-                    },
-                  ),
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    touchTooltipData: BarTouchTooltipData(
-
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(
-                          '${rod.toY.toInt()}%',
-                          const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
+            todayDecoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.5),
+              shape: BoxShape.circle,
             ),
-          ],
+            selectedDecoration: const BoxDecoration(
+              color: primaryColor,
+              shape: BoxShape.circle,
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-
-class _TimePeriodSelector extends StatelessWidget {
-  final int? selectedPeriod;
-  final ValueChanged<int>? onPeriodChanged;
-
-  const _TimePeriodSelector({
-    required this.selectedPeriod,
-    required this.onPeriodChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final List<String> buttons = ['DIARIO', 'SEMANAL', 'MENSUAL'];
-
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: appBackgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(buttons.length, (index) {
-          final bool isSelected = index == selectedPeriod;
-          return Expanded(
-            child: GestureDetector(
-              onTap: onPeriodChanged != null
-                  ? () => onPeriodChanged!(index)
-                  : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected ? primaryColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text(
-                    buttons[index],
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? cardBackgroundColor : Colors.black54,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-
+// -------------------------------------------------------------------
+// TAREA PRÓXIMA (Mantenida)
+// -------------------------------------------------------------------
 class _TaskEntry extends StatelessWidget {
   final String title;
   final String subject;
@@ -488,7 +348,9 @@ class _TaskEntry extends StatelessWidget {
   }
 }
 
-
+// -------------------------------------------------------------------
+// NAVEGACIÓN INFERIOR (Mantenida)
+// -------------------------------------------------------------------
 Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     currentIndex: currentIndex,
