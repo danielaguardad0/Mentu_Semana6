@@ -7,7 +7,7 @@ class TaskEntity {
   final String title;
   final String subject;
   final String dueTime;
-  final DateTime dueDate; // ✅ CORRECCIÓN CRÍTICA: Ahora es DateTime
+  final DateTime dueDate;
   final Color color;
   final bool isCompleted;
 
@@ -16,7 +16,7 @@ class TaskEntity {
     required this.title,
     required this.subject,
     required this.dueTime,
-    required this.dueDate, // ✅ Constructor espera DateTime
+    required this.dueDate,
     this.color = Colors.blue,
     this.isCompleted = false,
   });
@@ -26,7 +26,7 @@ class TaskEntity {
     String? title,
     String? subject,
     String? dueTime,
-    DateTime? dueDate, // ✅ copyWith espera DateTime
+    DateTime? dueDate,
     Color? color,
     bool? isCompleted,
   }) {
@@ -35,7 +35,7 @@ class TaskEntity {
       title: title ?? this.title,
       subject: subject ?? this.subject,
       dueTime: dueTime ?? this.dueTime,
-      dueDate: dueDate ?? this.dueDate, // ✅ Asigna DateTime
+      dueDate: dueDate ?? this.dueDate,
       color: color ?? this.color,
       isCompleted: isCompleted ?? this.isCompleted,
     );

@@ -28,10 +28,8 @@ class TaskRepository {
       'title': task.title,
       'subject': task.subject,
       'due_time': task.dueTime,
-      // ✅ Usa Timestamp para guardar el DateTime
       'due_date': Timestamp.fromDate(task.dueDate),
       'is_completed': task.isCompleted,
-
       'color': task.color.value,
       'userId': uid,
       'createdAt': FieldValue.serverTimestamp(),
@@ -42,7 +40,6 @@ class TaskRepository {
     final data = doc.data() as Map<String, dynamic>?;
     if (data == null) throw Exception("Task data is null");
 
-    // ✅ VERIFICACIÓN DE TIPO: Asegura que el dato sea un Timestamp de Firestore
     final dueDateTimestamp = data['due_date'];
     if (dueDateTimestamp is! Timestamp) {
       // Este error solo ocurriría si los datos fueron ingresados manualmente con el tipo incorrecto.
@@ -55,7 +52,6 @@ class TaskRepository {
       title: data['title'] as String,
       subject: data['subject'] as String,
       dueTime: data['due_time'] as String,
-      // ✅ CONVERSIÓN: Timestamp a DateTime (para la Entidad)
       dueDate: dueDateTimestamp.toDate(),
       isCompleted: data['is_completed'] as bool,
       color: Color(data['color'] as int),
@@ -74,7 +70,6 @@ class TaskRepository {
 
       return snapshot.docs.map((doc) => _fromSnapshot(doc)).toList();
     } catch (e) {
-      // Propagar error para que el Notifier pueda manejar la UI
       throw Exception('Failed to load tasks from database: ${e.toString()}');
     }
   }
