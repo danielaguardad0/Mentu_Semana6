@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   style: GoogleFonts.inter(fontSize: 14, color: Colors.black54),
                 ),
                 Text(
-                  "Marjorie",
+                  "Estudiante Mentu",
                   style: GoogleFonts.lobster(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

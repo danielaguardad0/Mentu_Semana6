@@ -82,6 +82,7 @@ class OnboardingScreen extends StatelessWidget {
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeInOut,
                     child: OutlinedButton(
+                      // 🎯 RUTA CORREGIDA: Apunta al nuevo /signup
                       onPressed: () => Navigator.pushNamed(context, '/signup'),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 55),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "756642158369",
+    "project_id": "mentu-20",
+    "storage_bucket": "mentu-20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756642158369:android:e2c4568435b244a9095060",
+        "android_client_info": {
+          "package_name": "com.example.mentu_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqDQ0esdUa93e0DNEBC0hYWOXiDvtfXP4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
