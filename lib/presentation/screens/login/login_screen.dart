@@ -16,11 +16,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Maneja el proceso de inicio de sesión
+  // Inicio de sesión
   void _handleLogin() async {
     if (_isLoading) return;
 
-    // Validación
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Ingrese su correo y contraseña.'),
@@ -69,7 +68,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 50),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -92,18 +90,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 50),
-
                 TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: _inputDecoration(
                       'Correo electrónico', Icons.email_outlined, primaryColor),
                 ),
-
                 const SizedBox(height: 20),
-
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
@@ -111,9 +105,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       'Contraseña', Icons.lock_outline, primaryColor),
                   onFieldSubmitted: (_) => _isLoading ? null : _handleLogin(),
                 ),
-
                 const SizedBox(height: 10),
-
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -125,9 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
@@ -151,10 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : const Text('Iniciar Sesión'),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Link a registro
                 TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/signup'),
                   child: const Text(
@@ -173,7 +160,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  // Estilo común para los campos de texto
   InputDecoration _inputDecoration(String label, IconData icon, Color color) {
     return InputDecoration(
       labelText: label,

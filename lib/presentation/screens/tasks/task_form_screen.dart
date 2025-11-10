@@ -4,12 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mentu_app/domain/entities/task_entity.dart';
 import 'package:mentu_app/presentation/providers/tasks_provider.dart';
 import 'package:mentu_app/presentation/providers/subject_provider.dart';
-// Necesario para isSameDay
 
 const Color primaryColor = Colors.blue;
 const Color cardBackgroundColor = Colors.white;
-
-// 🛑 ELIMINADA la clase DateOption (ya no se usa la lógica dinámica compleja)
 
 class TaskFormScreen extends ConsumerStatefulWidget {
   final TaskEntity? taskToEdit;
@@ -30,18 +27,15 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   late String _selectedDueTime;
   late Color _selectedColor;
 
-  // ✅ REVERSIÓN: La fecha es solo una etiqueta String
   late String _selectedDueDateLabel;
   late String _selectedSubject;
 
-  // ✅ REVERSIÓN: Opciones estáticas (CRÍTICAS para la estabilidad del Dropdown)
   final List<String> _dueDateOptions = [
     'Today',
     'Tomorrow',
     'In two days',
     'Next Week',
   ];
-  // Opciones estáticas para la HORA
   final List<String> _dueTimeOptions = [
     '11:30 AM',
     '2:00 PM',
@@ -72,7 +66,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     return today;
   }
 
-  // 💡 Función auxiliar para obtener la etiqueta de una fecha de edición
   String _getLabelForDueDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -82,8 +75,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     if (comparisonDate.isAtSameMomentAs(today.add(const Duration(days: 1))))
       return 'Tomorrow';
 
-    // Si no coincide con las opciones preestablecidas, devolvemos la primera opción estática.
-    // Esto es un compromiso para mantener el Dropdown estable.
     return _dueDateOptions.first;
   }
 
@@ -101,7 +92,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
     _selectedDueTime = isEditing ? task!.dueTime : _dueTimeOptions.first;
     _selectedColor = isEditing ? task!.color : _colorOptions.first;
 
-    // ✅ CORRECCIÓN CRÍTICA: Convertir el DateTime de la tarea a una etiqueta String válida
     _selectedDueDateLabel =
         isEditing ? _getLabelForDueDate(task!.dueDate) : _dueDateOptions.first;
 
@@ -171,7 +161,6 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
         .showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
-  // Lógica de selección/adición de materias (Mantenida)
   Widget _buildSubjectSelector(List<String> subjects) {
     final isAddingNew = _selectedSubject == 'ADD_NEW' ||
         (_selectedSubject.isEmpty && subjects.isEmpty);
@@ -257,9 +246,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
   // Dropdown genérico adaptado para Strings
   Widget _buildDropdownField(
       {required String label,
-      required String currentValue, // Acepta String
-      required List<String> items, // Acepta List<String>
-      required void Function(String?) onChanged, // Acepta función de String?
+      required String currentValue,
+      required List<String> items,
+      required void Function(String?) onChanged,
       IconData? icon}) {
     return DropdownButtonFormField<String>(
       value: currentValue,
